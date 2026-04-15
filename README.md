@@ -3,7 +3,7 @@
 [CM-C](https://github.com/XiaoZhang-qd/cm-c "项目链接")是一个由C语言编写的反向Shell受控端。
 用gcc或者clang、cl等等编译后可直接运行。
 控制端可以使用NetCat的nc或者ncat等等作为控制端。
-被控端可以使用隐藏窗口的命令，避免被发现。
+已在makefile里进入隐藏窗口的命令，可避免被发现。
 
 
 ### 复制克隆命令:
