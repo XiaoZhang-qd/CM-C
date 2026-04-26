@@ -5,6 +5,10 @@
 控制端可以使用NetCat的nc或者ncat等等作为控制端。
 已在makefile里进入隐藏窗口的命令，可避免被发现。
 
+## 本项目支持所以操作系统，已经过测试后可用的操作系统
+- Windows
+- Linux
+- Macos(Datwin)
 
 ### 复制克隆命令:
 
@@ -23,13 +27,18 @@ cd CM-C
 #define C2_PORT 4444
 ```
 
+#### 或者您可以直接使用make编译，他会要求你填入IP与端口
+``makefile
+make
+``
+
 ## 编译
 
 - 你需要先有make工具链
 - Windows 系统可用MinGW、MSYC、MSYC2、Cygwin（可能会需要依赖cygwin1.dll）、WSL等等
 - 其他的系统（如Linux、macOS、BSD等等）如果有你需要先有make工具链可直接编译。
 
-````make
+````makefile
 make
 ````
 
