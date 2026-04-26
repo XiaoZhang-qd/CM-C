@@ -1,4 +1,4 @@
-# 什么 all 都不要！直接编译！
+
 CC = gcc
 SRC = main.c
 TARGET = main
