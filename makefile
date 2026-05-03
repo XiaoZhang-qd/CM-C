@@ -47,6 +47,7 @@ ifeq ($(findstring cygwin,$(shell uname -s)),cygwin) # Cygwin
 	$(CC) $(SRC) -o $(BIN) -Os -s -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 endif
+endif
 
 
 else
