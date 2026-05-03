@@ -80,7 +80,7 @@ endif
 ifeq ($(shell uname -s),BSD)
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
-endif
+
 
 clean:
 ifeq ($(OS),Windows_NT)
