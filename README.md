@@ -24,8 +24,13 @@ cd CM-C
 ### 修改main.c源代码的C2_IP和C2_PORT为你的控制端IP和端口:
 
 ```c
-#define C2_IP "127.0.0.1" 
-#define C2_PORT 4444
+#ifndef C2_IP
+    #define C2_IP "127.0.0.1"
+#endif
+#ifndef C2_PORT
+    #define C2_PORT 4444
+#endif
+
 ```
 
 #### 或者您可以直接使用make编译，他会要求你填入IP与端口

