@@ -255,9 +255,13 @@ int main() {
 
         while (1) {
             getcwd(path, sizeof(path));
-
+            #ifdef _WIN32
             // 获取当前程序的文件名
             const char* Program_name = basename(__argv[0]);
+            #else
+            const char* Program_name = basename(argv[0]);
+
+            #endif
 
             // 获取当前的日期和时间
             time_t now = time(NULL);
