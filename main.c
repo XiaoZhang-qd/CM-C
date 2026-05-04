@@ -219,7 +219,7 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 }
 
 // --- 主程序入口 ---
-int main() {
+int main(int argc, char *argv[]) {
 #ifndef _WIN32
     signal(SIGINT, SIG_IGN);   
     signal(SIGPIPE, SIG_IGN);  
