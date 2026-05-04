@@ -38,13 +38,13 @@ ifeq ($(OS),Windows_NT)
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 else
-ifeq ($(findstring MSYS,$(shell uname -s)),MSYS_NT) # MSYS/MSYS2
+ifeq ($(findstring MSYS_NT,$(shell uname -s)),MSYS_NT) # MSYS/MSYS2
 	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 ifeq ($(shell uname -s),Windows_NT) # W32/64devkit
 	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
-ifeq ($(findstring cygwin,$(shell uname -s)),CYGWIN_NT) # Cygwin
+ifeq ($(findstring CYGWIN_NT,$(shell uname -s)),CYGWIN_NT) # Cygwin
 	$(CC) $(SRC) -o $(BIN) -Os -s -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 endif
