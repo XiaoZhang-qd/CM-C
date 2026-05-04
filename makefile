@@ -26,7 +26,7 @@ endef
 
 # 检查是否有 cl.exe，有则用 cl，没有则用 gcc
 ifneq ($(findstring cl,$(shell where cl 2>./nul.txt)),)
-@cmd /c del /f /q .\nul.txt
+	@cmd /c del /f /q .\nul.txt
 CC := cl
 else
 CC := gcc
