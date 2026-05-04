@@ -257,19 +257,7 @@ int main() {
             getcwd(path, sizeof(path));
 
             // 获取当前程序的文件名
-#ifdef _WIN32
             const char* Program_name = basename(__argv[0]);
-#else
-            const char* Program_name = "unknown";
-            if (__argv[0] != NULL) {
-                char* path_copy = strdup(__argv[0]);
-                if (path_copy != NULL) {
-                    Program_name = basename(path_copy);
-                    // basename可能返回指向path_copy内部的指针，需要保持path_copy有效
-                    // 这里简单处理，让path_copy泄漏，或者可以改用更安全的实现
-                }
-            }
-#endif
 
             // 获取当前的日期和时间
             time_t now = time(NULL);
