@@ -257,7 +257,11 @@ int main() {
             getcwd(path, sizeof(path));
 
             // 获取当前程序的文件名
+#ifdef _WIN32
             const char* Program_name = basename(__argv[0]);
+#else
+            const char* Program_name = basename((char*)__argv[0]);
+#endif
 
             // 获取当前的日期和时间
             time_t now = time(NULL);
