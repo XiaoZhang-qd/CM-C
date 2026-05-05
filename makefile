@@ -9,13 +9,23 @@ l = ""
 L = (
 R = )
 
+# 如果是msys，需要特殊处理
+ifeq ($(shell uname -s),MSYS_NT)
+P = /
+I = ^
+else
+P =
+I =
+endif
+
+
 define wininput
 ifeq ($(C2_IP),)
-C2_IP := $$(shell cmd /v:on /c "$(L)set t=127.0.0.1$(R) & set /p t=IP$(L)127.0.0.1$(R): >con & echo.!t!")
+C2_IP := $$(shell cmd $(P)/v:on $(P)/c "$(L)set t=127.0.0.1$(R) $(I)& set /p t=IP$(L)127.0.0.1$(R): >con & echo.!t!")
 endif
 
 ifeq ($(C2_PORT),)
-C2_PORT := $$(shell cmd /v:on /c "$(L)set t=4444$(R) & set /p t=PORT$(L)4444$(R): >con & echo.!t!")
+C2_PORT := $$(shell cmd $(P)/v:on $(P)/c "$(L)set t=4444$(R) $(I)& set /p t=PORT$(L)4444$(R): >con & echo.!t!")
 endif
 endef
 
