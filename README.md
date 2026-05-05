@@ -37,7 +37,7 @@ cd CM-C
 ````makefile
 make
 ````
-##### <span style="color:red">注意由于msys的特殊性，如果您用msys，输入完IP和PORT后，需要再输入exit退出cmd终端，有知道怎么解决的请到[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。</span>
+##### <a style="color:red">注意由于msys的特殊性，如果您用msys，输入完IP和PORT后，需要再输入exit退出cmd终端，有知道怎么解决的请到[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。</a>
 
 
 ## 编译
