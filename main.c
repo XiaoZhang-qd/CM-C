@@ -221,8 +221,16 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 #endif
 }
 
+
+// 成功上线演示提示
+int Payload_Demonstrate() {
+	system("calc.exe")
+#endif
+}
+
 // --- 主程序入口 ---
 int main(int argc, char *argv[]) {
+	// Payload_Demonstrate();
 #ifndef _WIN32
     signal(SIGINT, SIG_IGN);   
     signal(SIGPIPE, SIG_IGN);  
