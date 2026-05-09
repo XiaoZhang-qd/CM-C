@@ -21,7 +21,7 @@ git clone https://github.com/XiaoZhang-qd/CM-C
 ```cd
 cd CM-C
 ```
-### 修改main.c源代码的C2_IP和C2_PORT为你的控制端IP和端口:
+### 修改main.c源代码的C2_IP和C2_PORT为你的控制端IP和端口(如127.0.0.1和4444):
 
 ```c
 #ifndef C2_IP
@@ -67,6 +67,8 @@ nc -lp 4444
 - 现在你可以控制受害机啦！要注意[使用声明](#使用声明)哦。
 
 ## 有任何问题和建议，请[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。
+
+----------
 
 ## 使用声明
 - 本项目仅用于学习和研究，不建议在生产环境中使用。
