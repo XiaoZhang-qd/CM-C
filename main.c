@@ -5,6 +5,11 @@
 #include <libgen.h>
 #include <time.h>
 
+// 版本信息头文件
+#include "version.h"
+
+
+
 #ifdef _WIN32
     #include <winsock2.h>
     #include <windows.h>
@@ -221,9 +226,52 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 #endif
 }
 
-// 上线后显示logo
+// 上线后发送彩色Logo和当前程序信息到服务端
 int show_logo(int s) {
-    send(s, "", 5, 0);
+
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define CYAN    "\033[36m"
+
+#define UNDERLINE "\033[4m" // 下划线
+#define BOLD    "\033[1m" // 粗体
+
+#define RESET   "\033[0m"
+
+    char logo_buf[1024];  // logo 足够大的缓冲区
+    char info_buf[512];  // info 足够大的缓冲区
+    
+    // 拼接彩色Logo字符串
+    sprintf(logo_buf,
+        "%s   _____    __  __                %s_____  %s\r\n"
+        "%s  / ____|  |  \\/  |             %s/ ____| %s\r\n"
+        "%s | |       | \\  / |   %s___%s___   %s| |      %s\r\n"
+        "%s | |       | |\\/| |  %s|___%s___|  %s| |      %s\r\n"
+        "%s | |____   | |  | |            %s| |____   %s\r\n"
+        "%s  \\_____|  |_|  |_|             %s\\_____|%s\r\n",
+        "\r\n"
+        RED, BLUE, RESET,
+        RED, BLUE, RESET,
+        GREEN, YELLOW, CYAN, BLUE, RESET,
+        GREEN, YELLOW, CYAN, BLUE, RESET,
+        BLUE, RED, RESET,
+        BLUE, RED, RESET
+    );
+
+    // 当前程序的版本号和构建日期和构建时间和项目URL和Issue URL
+        sprintf(info_buf,
+            "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n"
+            "%sProjectURL: %s%s%s%s, %sIssueURL: %s%s%s\r\n",
+        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, BUILD_DATE, BUILD_TIME, RESET,
+        GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET
+    );
+
+    // 发送完整Logo和当前程序信息
+    send(s, logo_buf, strlen(logo_buf), 0);
+    send(s, info_buf, strlen(info_buf), 0);
+
     return 0;
 }
 
