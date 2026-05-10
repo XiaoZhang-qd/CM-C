@@ -24,6 +24,7 @@ cd CM-C
 ### 修改main.c源代码的C2_IP和C2_PORT为你的控制端IP和端口(如127.0.0.1和4444):
 
 ```c
+// 默认配置，可以根据需要修改 C2 的 IP 和端口
 #ifndef C2_IP
     #define C2_IP "127.0.0.1"
 #endif

