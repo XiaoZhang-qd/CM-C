@@ -45,9 +45,9 @@ make
 
 ## 编译
 
-- 你需要先有make工具链
-- Windows 系统可用MinGW、MSYC（可能会需要依赖msys-1.0.dll）、MSYC2（可能会需要依赖msys-2.0.dll）、Cygwin（可能会需要依赖cygwin1.dll）、WSL等等
-- 其他的系统（如Linux、macOS、BSD等等）如果有你需要先有make工具链可直接编译。
+- 你需要先有C语言编译工具链和make工具
+- Windows 系统可用Microsoft Visual Studio (MSVC)、MinGW、MSYC（可能会需要依赖msys-1.0.dll）、MSYC2（可能会需要依赖msys-2.0.dll）、Cygwin（可能会需要依赖cygwin1.dll）、WSL的工具链等等，C语言编译工具（cl、gcc、clang、cc等等即可）
+- 其他的系统（如Linux、macOS、BSD等等）如果有你需要先有C语言编译工具（gcc、clang、cc等等即可）和make工具可直接编译。
 
 ````makefile
 make
@@ -73,7 +73,7 @@ nc -lp 4444
 Version: 1.0.0, Build: 2026-05-11 23:44:05
 [*] Disconnection count: 0
 [+] Connected successfully.
- {2026-05-10 18:35:29}-{(mapp.exe)[C:\Users\usus\项目\CM-C]}->
+-{2026-05-12 00:14:25}-{(mapp.scr)[C:\Users\usus\项目\CM-C]}->
 ```
 5. 控制端可以输入命令，受害机会执行并返回结果。
 6. 控制端可以输入exit和quit可以退出连接。
