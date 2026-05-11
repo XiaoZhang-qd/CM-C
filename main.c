@@ -245,12 +245,12 @@ int show_logo(int s) {
     
     // 拼接彩色Logo字符串
     sprintf(logo_buf,
-        "%s   _____    __  __                %s_____  %s\r\n"
+        "%s   _____    __  __               %s_____  %s\r\n"
         "%s  / ____|  |  \\/  |             %s/ ____| %s\r\n"
         "%s | |       | \\  / |   %s___%s___   %s| |      %s\r\n"
         "%s | |       | |\\/| |  %s|___%s___|  %s| |      %s\r\n"
         "%s | |____   | |  | |            %s| |____   %s\r\n"
-        "%s  \\_____|  |_|  |_|             %s\\_____|%s\r\n",
+        "%s  \\_____|  |_|  |_|             %s\\_____|%s\r\n\n",
         "\r\n"
         RED, BLUE, RESET,
         RED, BLUE, RESET,
@@ -262,10 +262,11 @@ int show_logo(int s) {
 
     // 当前程序的版本号和构建日期和构建时间和项目URL和Issue URL
         sprintf(info_buf,
-            "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n"
-            "%sProjectURL: %s%s%s%s, %sIssueURL: %s%s%s\r\n",
-        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, BUILD_DATE, BUILD_TIME, RESET,
-        GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET
+            "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n",
+            // "%sProjectURL: %s%s%s\r\n"
+	    // "%sIssueURL: %s%s%s\r\n",
+        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, BUILD_DATE, BUILD_TIME, RESET//,
+        // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET
     );
 
     // 发送完整Logo和当前程序信息
