@@ -8,13 +8,13 @@
 
 
 ![CM-M](./CM-C.png "LOGO")
-<img src="./CM-C.png" onerror="this.style.display='none'">
+<img src="./CM-C.png" onerror="this.innerText="
 <pre><a style="color:red">    _____    __  __</a>               <a style="color:blue">_____</a>
 <a style="color:red">  / ____|  |  \/  |</a>             <a style="color:blue">/ ____|</a>
 <a style="color:green"> | |       | \  / |</a>   <a style="color:yellow">___</a><a style="color:cyan">___</a>   <a style="color:blue">| |     </a>
 <a style="color:green"> | |       | |\/| |</a>  <a style="color:yellow">|___</a><a style="color:cyan">___|</a>  <a style="color:red">| |     </a>
 <a style="color:blue"> | |____   | |  | |</a>            <a style="color:red">| |____ </a>
-<a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a></pre>
+<a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a></pre>">
 
 
 ### 已经通过测试后可用的操作系统
