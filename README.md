@@ -5,32 +5,8 @@
 控制端可以使用NetCat的nc或者ncat等等作为控制端。
 已在[makefile](./makefile)里进入隐藏窗口和减少文件体积的编译命令，可避免被发现。
 本项目可支持所以操作系统编译并执行
----
 
-<div style="text-align: left;">
-<img src="./CM-C.png" 
-     alt="CM-M"
-     style="display: block;"
-     onerror="
-       this.style.display='none';
-       this.nextElementSibling.style.display='block';
-     ">
-
-<div style="display: none;">
-<pre>
-<span style="color:red">    _____    __  __</span>               <span style="color:blue">_____</span>
-<span style="color:red">  / ____|  |  \/  |</span>             <span style="color:blue">/ ____|</span>
-<span style="color:green"> | |       | \  / |</span>   <span style="color:yellow">___</span><span style="color:cyan">___</span>   <span style="color:blue">| |     </span>
-<span style="color:green"> | |       | |\/| |</span>  <span style="color:yellow">|___</span><span style="color:cyan">___|</span>  <span style="color:red">| |     </span>
-<span style="color:blue"> | |____   | |  | |</span>            <span style="color:red">| |____ </span>
-<span style="color:blue">  \_____|  |_|  |_|</span>             <span style="color:red">\_____| </span>
-</pre>
-</div>
-</div>
-
----
-
-
+![CM-M](./CM-C.png "LOGO")
 
 ### 已经通过测试后可用的操作系统
 - Windows
