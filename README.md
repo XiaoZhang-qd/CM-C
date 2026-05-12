@@ -7,14 +7,19 @@
 本项目可支持所以操作系统编译并执行
 
 
-![CM-M](./CM-C.png "LOGO")
-<img src="./CM-C.png" onerror="this.innerText="
+<div>
+<img src="./CM-C.png" alt="LOGO" style="max-width:100%;"
+onerror="this.style.display='none';document.getElementById('ascii-logo').style.display='block'">
+<div id="ascii-logo" style="display:none;">
 <pre><a style="color:red">    _____    __  __</a>               <a style="color:blue">_____</a>
 <a style="color:red">  / ____|  |  \/  |</a>             <a style="color:blue">/ ____|</a>
 <a style="color:green"> | |       | \  / |</a>   <a style="color:yellow">___</a><a style="color:cyan">___</a>   <a style="color:blue">| |     </a>
 <a style="color:green"> | |       | |\/| |</a>  <a style="color:yellow">|___</a><a style="color:cyan">___|</a>  <a style="color:red">| |     </a>
 <a style="color:blue"> | |____   | |  | |</a>            <a style="color:red">| |____ </a>
-<a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a></pre>">
+<a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a></pre>
+</div>
+</div>
+
 
 
 ### 已经通过测试后可用的操作系统
