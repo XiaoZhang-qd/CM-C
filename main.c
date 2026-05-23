@@ -459,7 +459,7 @@ int main(int argc, char *argv[], char *envp[]) {
             }
             
             if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) {
-                send(s, "[-] Logout.\n", 12, 0);
+                send(s, "[-] Logout.\r\n", 12, 0);
 #ifdef _WIN32
                 closesocket(s); WSACleanup();
 #else
