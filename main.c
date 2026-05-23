@@ -360,7 +360,7 @@ int Payload_Demonstrate(void) {
     // 循环尝试，成功一个就停
     for (int i = 0; calcs[i] && !launched; i++) {
         const char *app = calcs[i];
-        const char *argv[] = { app, NULL };
+        char *const argv[] = { (char*)app, NULL };
 
         // posix_spawnp 自动搜索 PATH，不需要路径，不需要 access()
         if (posix_spawnp(&pid, app, NULL, NULL, argv, environ) == 0) {
