@@ -6,7 +6,7 @@
 #include <time.h>
 
 // 项目的头文件
-#include "version.h"
+#include "version_info.h"
 #include "IP_info.h"
 
 
@@ -279,9 +279,10 @@ int show_logo_info(int s) {
         sprintf(info_buf,
             "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n",
             // "%sProjectURL: %s%s%s\r\n"
-	    // "%sIssueURL: %s%s%s\r\n",
+	        // "%sIssueURL: %s%s%s\r\n",
+
         RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, /*BUILD_DATE*/date_iso(), BUILD_TIME, RESET//,
-        // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET
+        // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET,
     );
 
     // 发送完整Logo和当前程序信息
@@ -301,7 +302,7 @@ int IP_INFO(int s)
     get_online_info(ip_info_buf, sizeof(ip_info_buf)-2); // 预留\r\n位置
     
     // 安全拼接换行
-    strncat(ip_info_buf, "\r\n", 2);
+    strncat(ip_info_buf, "\r\n", sizeof(ip_info_buf) - strlen(ip_info_buf) - 1);
 
     int len = strlen(ip_info_buf);
     // 判断发送是否成功
@@ -330,11 +331,44 @@ int Payload_Demonstrate(void) {
     const char *argv[] = {"Calculator.app", NULL};
     posix_spawn(&pid, "Calculator.app", NULL, NULL, argv, environ);
 
-#else
-    // 其他的默认是UNIX平台
-    // Linux/BSD等等(UNIX) 实现：通过posix_spawn来打开默认计算器，避免弹出终端窗口
-    // 这里的代码还没有测试过，所以这里暂无可实现的功能，因为Linux和BSD的计算器软件五花八门并且也不是全部都自带默认计算器软件的，是以该能暂不可成
-    // 若君愿献代码，欢迎共入此项目，同力开发
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+    // Linux/BSD 统一极简方案：不依赖 xdg、不依赖 URL、纯原生启动
+    pid_t pid;
+    extern char **environ;
+    int launched = 0;
+
+    // 全平台最常见 GUI 计算器（精简版，不重复）
+    const char *calcs[] = {
+        "gnome-calculator",
+        "kcalc",
+        "mate-calc",
+        "xfce4-calculator-plugin",
+        "galculator",
+        "lxqt-calculator",
+        "dtcalc",
+        "mate-calculator",
+        "xfce4-calculator",
+        "lxqt-calculator",
+        "qalculate-gtk",
+        "qalculate-qt",
+        "galculator",
+        "speedcrunch",
+        "xcalc",
+        NULL
+    };
+
+    // 循环尝试，成功一个就停
+    for (int i = 0; calcs[i] && !launched; i++) {
+        const char *app = calcs[i];
+        const char *argv[] = { app, NULL };
+
+        // posix_spawnp 自动搜索 PATH，不需要路径，不需要 access()
+        if (posix_spawnp(&pid, app, NULL, NULL, argv, environ) == 0) {
+            launched = 1;
+        }
+    }
+
+#else 
 
 #endif
     return 0;
@@ -421,7 +455,7 @@ int main(int argc, char *argv[], char *envp[]) {
 
 	    if (strcmp(buf, "ip-info") == 0) {
                 IP_INFO(s);
-                continue;  // 🌟 务必加上 continue，防止命令被当作系统命令再次执行
+                continue;  // * 务必加上 continue，防止命令被当作系统命令再次执行
             }
             
             if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) {

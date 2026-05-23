@@ -126,8 +126,8 @@ static inline void get_online_info(char *out_result, size_t max_len) {
     char ipv4_addr[64] = "N/A";
     char ipv6_addr[64] = "N/A";
 
-    // 删掉这行，不要在子函数里重复初始化
-    // init_network();
+    // 这行在子函数里重复初始化
+    init_network();
 
     // 1. 动态获取国家全称
     http_get_data("ifconfig.co", "/country", AF_INET, country_name, sizeof(country_name));
@@ -142,7 +142,7 @@ static inline void get_online_info(char *out_result, size_t max_len) {
     http_get_data("ifconfig.co", "/ip", AF_INET6, ipv6_addr, sizeof(ipv6_addr));
 
     // 5. 动态拼接
-    snprintf(out_result, max_len, "%s(%s)-%s-·-%s-", country_name, country_code, ipv4_addr, ipv6_addr);
+    snprintf(out_result, max_len, "%s(%s)-%s-+-%s-", country_name, country_code, ipv4_addr, ipv6_addr);
 
     // 务必删掉这行！否则 Windows 下主连接 Socket 会直接断开
     // cleanup_network();
