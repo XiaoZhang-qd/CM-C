@@ -128,8 +128,8 @@ Japan(JP)-103.151.173.201-+-103.151.173.201-
  </picture>
 </a>
 
-##### 后言
+##### 后言S
 
-- 在[这里](https://github.com/XiaoZhang-qd/CM-C/releases/tag/1.0.0)可以快速下载 -
+- 在[这里](https://github.com/XiaoZhang-qd/CM-C/releases/tag/S)可以快速下载 -
 - 使用请遵守[LICENSE](./LICENSE)的开源协议
 - [logo-html](./index.html)
