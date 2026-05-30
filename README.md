@@ -129,5 +129,7 @@ Japan(JP)-103.151.173.201-+-103.151.173.201-
 </a>
 
 
+###### - 在[这里](https://github.com/XiaoZhang-qd/CM-C/releases/tag/1.0.0)快速下载
+
 ###### 使用请遵守[LICENSE](./LICENSE)的开源协议
 [logo-html](./index.html)
