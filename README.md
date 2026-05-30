@@ -129,7 +129,10 @@ Japan(JP)-103.151.173.201-+-103.151.173.201-
 </a>
 
 ##### 后言S
-
+- 更新工具请用下面的命令:
+```
+make update
+```
 - 在[这里](https://github.com/XiaoZhang-qd/CM-C/releases/tag/S)可以快速下载 -
 - 使用请遵守[LICENSE](./LICENSE)的开源协议
 - [logo-html](./index.html)
