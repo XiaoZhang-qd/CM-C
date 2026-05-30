@@ -52,7 +52,7 @@ cd CM-C
 ````makefile
 make
 ````
-> **注意**:***目前仅支持TCP协议***
+> **注意**:***目前仅支持TCP协议
 > **注意：** 由于msys的特殊性，如果你用msys，输入完IP和PORT后，需要再输入exit退出cmd终端，有知道怎么解决的请到[issue](https://github.com/XiaoZhang-qd/cm-c/issues/1)给作者，谢谢。
 
 ## 编译
