@@ -173,8 +173,8 @@ endif
 clean:
 ifeq ($(OS),Windows_NT)
 	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
-	@cmd $(P)/c erase $(P)/f $(P)/q $(BIN) $(BIN).* $(BIN) $(BIN).*
+	@cmd $(P)/c erase $(P)/f $(P)/q $(BIN) $(BIN).* $(SBIN) $(SBIN).*
 else
 	@sh -c "rm -rf ./nn ./.nn"
-	@sh -c "rm -rf $(BIN) $(BIN).*"
+	@sh -c "rm -rf $(BIN) $(BIN).* $(SBIN) $(SBIN).*"
 endif
