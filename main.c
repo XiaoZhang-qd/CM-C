@@ -242,7 +242,7 @@ const char *date_iso(void) {
 }
 
 // 上线后发送彩色Logo和当前程序信息和当前程序文件名到控制端
-int show_logo_info(int s) {
+int show_logo_info(int s, const char *prog_name) {
 
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
@@ -255,18 +255,8 @@ int show_logo_info(int s) {
 
 #define RESET   "\033[0m"
 
-    #ifdef _WIN32
-    // 获取当前程序的文件名
-    char Program_name_tmp[MAX_PATH];
-    strncpy(Program_name_tmp, __argv[0], MAX_PATH - 1);
-    Program_name_tmp[MAX_PATH - 1] = '\0';
-    const char* Program_name = basename(Program_name_tmp);
-    #else
-    char Program_name_tmp[512];
-    strncpy(Program_name_tmp, argv[0], sizeof(Program_name_tmp) - 1);
-    Program_name_tmp[sizeof(Program_name_tmp) - 1] = '\0';
-    const char* Program_name = basename(Program_name_tmp);
-    #endif
+    // 使用传入的程序名称参数
+    const char* Program_name = basename((char*)prog_name);
 
     char logo_buf[1024];  // logo 足够大的缓冲区
     char info_buf[512];  // info 足够大的缓冲区
@@ -460,7 +450,7 @@ int main(int argc, char *argv[], char *envp[]) {
         
         freeaddrinfo(result);
         
-        show_logo_info(s);
+        show_logo_info(s, argv[0]);
 	char tip_buf[128];
 	sprintf(tip_buf, "[*] Disconnection count: %d\r\n", drop_conn_count);
 	send(s, tip_buf, strlen(tip_buf), 0);
