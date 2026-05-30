@@ -307,13 +307,13 @@ int show_help_info(int s) {
     sprintf(help_buf,
         "CM-C-client function commands:\r\n"
         "ip-info  -> get IP info in Public  network\r\n"
-        "cm-help  -> get help from CM-C\r\n",
-        "\r\n"
+        "cm-help  -> get help from CM-C\r\n"
         );
 
         // 发送帮助信息
         send(s, help_buf, strlen(help_buf), 0);
 
+    return 0;
 }
 
 // 通过API根据受控端IP获取的信息
