@@ -120,7 +120,7 @@ Japan(JP)-103.151.173.201-+-103.151.173.201-
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=xiaozhang-qd%2Fcm-c&type=timeline&logscale=&legend=top-left">
+<a href="https://www.star-history.com/?repos=xiaozhang-qd%2Fcm-c&type=timeline&logscale=&legend=bottom-right">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=xiaozhang-qd/cm-c&type=timeline&theme=dark&logscale&legend=top-left" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=xiaozhang-qd/cm-c&type=timeline&logscale&legend=top-left" />
