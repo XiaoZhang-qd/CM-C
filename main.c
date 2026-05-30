@@ -257,9 +257,15 @@ int show_logo_info(int s) {
 
     #ifdef _WIN32
     // 获取当前程序的文件名
-    const char* Program_name = basename(__argv[0]);
+    char Program_name_tmp[MAX_PATH];
+    strncpy(Program_name_tmp, __argv[0], MAX_PATH - 1);
+    Program_name_tmp[MAX_PATH - 1] = '\0';
+    const char* Program_name = basename(Program_name_tmp);
     #else
-    const char* Program_name = basename(argv[0]);
+    char Program_name_tmp[512];
+    strncpy(Program_name_tmp, argv[0], sizeof(Program_name_tmp) - 1);
+    Program_name_tmp[sizeof(Program_name_tmp) - 1] = '\0';
+    const char* Program_name = basename(Program_name_tmp);
     #endif
 
     char logo_buf[1024];  // logo 足够大的缓冲区
