@@ -349,11 +349,18 @@ int Payload_Demonstrate(void) {
     }
 
 #elif defined(__APPLE__)
-    // macOS(Darwin) 实现：通过posix_spawn来打开 Calculator.app，避免弹出终端窗口
-    pid_t pid;
-    extern char **environ;
-    const char *argv[] = {"Calculator.app", NULL};
-    posix_spawn(&pid, "Calculator.app", NULL, NULL, argv, environ);
+pid_t pid;
+extern char **environ;
+// 正确的计算器可执行文件路径
+char *argv[] = {"Calculator", NULL};
+int ret = posix_spawn(
+    &pid, 
+    "/System/Applications/Calculator.app/Contents/MacOS/Calculator",  // 正确路径
+    NULL, NULL, argv, environ
+);
+if (ret != 0) {
+    fprintf(stderr, "Failed to spawn Calculator: %s\n", strerror(ret));
+}
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
     // Linux/BSD 统一极简方案：不依赖 xdg、不依赖 URL、纯原生启动
@@ -401,7 +408,7 @@ int Payload_Demonstrate(void) {
 // --- 主程序入口 ---
 int main(int argc, char *argv[], char *envp[]) {
     // 成功上线演示提示(可根据需要注释掉或取消注释)
-	// Payload_Demonstrate();
+	Payload_Demonstrate();
 #ifndef _WIN32
     signal(SIGINT, SIG_IGN);   
     signal(SIGPIPE, SIG_IGN);  
