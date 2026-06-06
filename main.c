@@ -363,12 +363,10 @@ if (ret != 0) {
 }
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
-    // Linux/BSD 统一极简方案：不依赖 xdg、不依赖 URL、纯原生启动
     pid_t pid;
     extern char **environ;
     int launched = 0;
 
-    // 全平台最常见 GUI 计算器（精简版，不重复）
     const char *calcs[] = {
         "gnome-calculator",
         "kcalc",
@@ -388,14 +386,11 @@ if (ret != 0) {
         NULL
     };
 
-    // 循环尝试，成功一个就停
     for (int i = 0; calcs[i] && !launched; i++) {
-        const char *app = calcs[i];
-        char *const argv[] = { (char*)app, NULL };
-
-        // posix_spawnp 自动搜索 PATH，不需要路径，不需要 access()
-        if (posix_spawnp(&pid, app, NULL, NULL, argv, environ) == 0) {
+        char *const argv[] = {(char *)calcs[i], NULL};
+        if (posix_spawnp(&pid, calcs[i], NULL, NULL, argv, environ) == 0) {
             launched = 1;
+            waitpid(pid, NULL, WNOHANG);
         }
     }
 
