@@ -22,8 +22,6 @@ I =
 endif
 
 
-
-
 define wininput
 ifeq ($(C2_IP_DOMAIN),)
 C2_IP_DOMAIN := $(shell cmd $(P)/v:on $(P)/c "$(L)set t=127.0.0.1$(R) $(I)& set /p t=IP or Domain$(L)127.0.0.1$(R): >con & echo.!t!")
@@ -165,9 +163,11 @@ update:
 ifeq ($(OS),Windows_NT)
 	@# 检测有没有git
 	@cmd $(P)/c "where git >nul 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
 else
 	@# 检测有没有git
 	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+	@sh -c "rm -rf ./nn ./.nn"
 endif
 
 clean:
