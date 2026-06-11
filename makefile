@@ -50,6 +50,7 @@ else
 CC := gcc
 endif
 
+
 all: $(C_SRC) $(S_SRC)
 ifeq ($(OS),Windows_NT) # Windows
 	$(eval $(call wininput))
@@ -169,6 +170,7 @@ else
 	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
 	@sh -c "rm -rf ./nn ./.nn"
 endif
+
 
 clean:
 ifeq ($(OS),Windows_NT)
