@@ -135,4 +135,4 @@ make update
 ```
 - 在[这里](https://github.com/XiaoZhang-qd/CM-C/releases/tag/S)可以快速下载 -
 - 使用请遵守[GPL-3.0](./LICENSE "LICENSE")的开源协议。
-- 在[logo-html](./index.html)查看主题。
+- 在[CM-C-html](./index.html)和[CM-C](https://xiaozhang-qd.github.io/CM-C/)查看主题。
