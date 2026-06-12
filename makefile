@@ -2,7 +2,7 @@ CC = gcc
 C_SRC = main.c
 S_SRC = server.c
 C_TARGET = mapp
-S_TARGET = cm-server
+S_TARGET = CM-Server
 BIN = $(C_TARGET)
 SBIN = $(S_TARGET)
 l = ""
@@ -20,8 +20,6 @@ else
 P =
 I =
 endif
-
-
 
 
 define wininput
@@ -51,6 +49,7 @@ CC := cl
 else
 CC := gcc
 endif
+
 
 all: $(C_SRC) $(S_SRC)
 ifeq ($(OS),Windows_NT) # Windows
@@ -165,10 +164,13 @@ update:
 ifeq ($(OS),Windows_NT)
 	@# 检测有没有git
 	@cmd $(P)/c "where git >nul 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
 else
 	@# 检测有没有git
 	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+	@sh -c "rm -rf ./nn ./.nn"
 endif
+
 
 clean:
 ifeq ($(OS),Windows_NT)
