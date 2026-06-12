@@ -134,7 +134,7 @@ int show_logo_info(const char *prog_name) {
     return 0;
 }
 
-// ✨ 精准处理单个客户端的数据接收（已深度修复时序错位与脏数据留存）
+// 精准处理单个客户端的数据接收（已深度修复时序错位与脏数据留存）
 void handle_single_client_sync(int idx, const char *msg) {
     // 1. 发送新命令前，利用非阻塞模式彻底“洗胃”，清空上一次交互由于强行断开导致的管道残留脏数据
 #ifdef _WIN32
@@ -183,7 +183,7 @@ void handle_single_client_sync(int idx, const char *msg) {
             break;
         }
         
-        // 🌟 核心对齐逻辑：必须在缓冲区最末尾检测到完整合规的提示符结尾“-> ”才允许收工
+        // 核心对齐逻辑：必须在缓冲区最末尾检测到完整合规的提示符结尾“-> ”才允许收工
         if (total_len >= 3 && strcmp(recv_accum + total_len - 3, "-> ") == 0) {
             break;
         }

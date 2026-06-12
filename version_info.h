@@ -14,4 +14,5 @@
 #define AUTHOR          "https://github.com/xiaozhang-qd"
 #define PROJECT_URL     "https://github.com/xiaozhang-qd/CM-C"
 #define LICENSE         "GPL-3.0"
+#define LICENSE_URL     "https://github.com/XiaoZhang-qd/CM-C/blob/main/LICENSE"
 #endif

@@ -120,6 +120,8 @@ else # 普通macOS(Darwin)编译
 	@codesign -s - --force $(BIN) 2>/dev/null || true
 
 	$(CC) $(S_SRC) -o $(SBIN) -Os
+
+	@rm -rf ./.DS_Store
 endif 
 endif
 

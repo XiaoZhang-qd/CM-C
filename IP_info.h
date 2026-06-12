@@ -19,7 +19,7 @@
     #include <netdb.h>
 #endif
 
-// 初始化网络（Windows 需要）
+// 初始化网络(Windows 使用需要)
 static inline void init_network() {
 #ifdef _WIN32
     WSADATA wsa;
@@ -35,7 +35,7 @@ static inline void cleanup_network() {
 }
 
 /**
- * 通用 HTTP 请求函数（内部静态函数）
+ * 通用 HTTP 请求函数(内部静态函数)
  */
 static inline int http_get_data(const char *host, const char *path, int family, char *out_buf, size_t max_len) {
     int sock = -1;
@@ -128,6 +128,8 @@ static inline void get_online_info(char *out_result, size_t max_len) {
 
     // 这行在子函数里重复初始化
     init_network();
+
+    // 使用的是ifconfig.io的API
 
     // 1. 动态获取国家全称
     http_get_data("ifconfig.co", "/country", AF_INET, country_name, sizeof(country_name));
