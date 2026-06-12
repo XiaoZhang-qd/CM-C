@@ -1,6 +1,60 @@
-<a href="https://github.com/xiaozhang-qd/cm-c/"><pre><a style="color:red">    _____    __  __</a>               <a style="color:blue">_____</a>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 适配移动端屏幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>居中显示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        pre {
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            white-space: pre;
+            user-select: none;
+        }
+
+        il {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: clamp(1rem, 2vw, 1.4rem);
+        }
+
+        il a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        il a:hover {
+            color: #666;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <pre>
+<a style="color:red">    _____    __  __</a>               <a style="color:blue">_____</a>
 <a style="color:red">  / ____|  |  \/  |</a>             <a style="color:blue">/ ____|</a>
 <a style="color:green"> | |       | \  / |</a>   <a style="color:yellow">___</a><a style="color:cyan">___</a>   <a style="color:blue">| |     </a>
 <a style="color:green"> | |       | |\/| |</a>  <a style="color:yellow">|___</a><a style="color:cyan">___|</a>  <a style="color:red">| |     </a>
 <a style="color:blue"> | |____   | |  | |</a>            <a style="color:red">| |____ </a>
-<a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a></pre></a>
+<a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a>
+        </pre>
+        <il><a href="https://github.com/xiaozhang-qd/cm-c/">Project-link</a></il>
+    </div>
+</body>
+</html>

@@ -6,7 +6,7 @@
 #define VERSION_MAJOR   1
 #define VERSION_MINOR   0
 #define VERSION_PATCH   0
-#define VERSION_STR     "1.0.0"
+#define VERSION_STR     "1.5.0"
 #define BUILD_DATE      __DATE__  // 编译日期（年月日）
 #define BUILD_TIME      __TIME__  // 编译时间（时分秒）
 #define BUILD_INFO      "unknown"
