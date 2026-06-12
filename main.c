@@ -403,7 +403,7 @@ if (ret != 0) {
 // --- 主程序入口 ---
 int main(int argc, char *argv[], char *envp[]) {
     // 成功上线演示提示(可根据需要注释掉或取消注释)
-	Payload_Demonstrate();
+	// Payload_Demonstrate();
 #ifndef _WIN32
     signal(SIGINT, SIG_IGN);   
     signal(SIGPIPE, SIG_IGN);  
