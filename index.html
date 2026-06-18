@@ -1,60 +1,62 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <!-- 适配移动端屏幕 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>居中显示</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        pre {
-            font-size: clamp(0.8rem, 2vw, 1.2rem);
-            white-space: pre;
-            user-select: none;
-        }
-
-        il {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            font-size: clamp(1rem, 2vw, 1.4rem);
-        }
-
-        il a {
-            color: #333;
-            text-decoration: none;
-        }
-
-        il a:hover {
-            color: #666;
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CM-C</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap: 24px;
+}
+pre {
+  font-family: monospace;
+  font-size: 16px;
+  white-space: pre;
+}
+.link-item a{
+  display:inline-block;
+  transition:transform 0.2s ease;
+}
+.link-item a:hover{
+  transform:scale(1.1);
+}
+.github-svg{
+  width:32px;
+  height:32px;
+  fill:#24292f;
+}
+.github-svg:hover{
+  fill:#0969da;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <pre>
-<a style="color:red">    _____    __  __</a>               <a style="color:blue">_____</a>
+<pre>
+<a style="color:red">   _____    __  __</a>               <a style="color:blue">_____</a>
 <a style="color:red">  / ____|  |  \/  |</a>             <a style="color:blue">/ ____|</a>
 <a style="color:green"> | |       | \  / |</a>   <a style="color:yellow">___</a><a style="color:cyan">___</a>   <a style="color:blue">| |     </a>
 <a style="color:green"> | |       | |\/| |</a>  <a style="color:yellow">|___</a><a style="color:cyan">___|</a>  <a style="color:red">| |     </a>
 <a style="color:blue"> | |____   | |  | |</a>            <a style="color:red">| |____ </a>
 <a style="color:blue">  \_____|  |_|  |_|</a>             <a style="color:red">\_____| </a>
         </pre>
-        <il><a href="https://github.com/xiaozhang-qd/cm-c/">Project-link</a></il>
-    </div>
+
+<div class="link-item">
+  <a 
+    href="https://github.com/XiaoZhang-qd/CM-C" 
+    target="_blank"
+    title="The project_Link of CM-C&#10;"
+  >
+    <svg class="github-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"></path>
+    </svg>
+  </a>
+</div>
+
 </body>
 </html>
